@@ -134,6 +134,38 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyMeta> = {
   },
 };
 
+export const STRIPE_STORE_TAG = "cozyglow-christmas-store" as const;
+export const STRIPE_SEASON_TAG = "christmas-2026" as const;
+
+export const STRIPE_PRODUCT_IDS = {
+  single: "prod_VeZt7zGvfSGT2j",
+  double: "prod_VeZti6reBDFi6m",
+  triple: "prod_VeZtxB4BbXbWsO",
+  orderBump: "prod_VeZtxHiwagrFYn",
+} as const;
+
+export const STRIPE_PRICE_IDS: Record<
+  BundleTier["id"] | "orderBump",
+  Record<CurrencyCode, string>
+> = {
+  single: {
+    gbp: process.env.STRIPE_PRICE_SINGLE_GBP || "price_1UdGkEPVvmLFhcXKPClz7t5I",
+    usd: process.env.STRIPE_PRICE_SINGLE_USD || "price_1UdGkIPVvmLFhcXKInV1J729",
+  },
+  double: {
+    gbp: process.env.STRIPE_PRICE_DOUBLE_GBP || "price_1UdGkPPVvmLFhcXKw1eeUAKz",
+    usd: process.env.STRIPE_PRICE_DOUBLE_USD || "price_1UdGkSPVvmLFhcXKCn0huRwx",
+  },
+  triple: {
+    gbp: process.env.STRIPE_PRICE_TRIPLE_GBP || "price_1UdGkVPVvmLFhcXKl2Arswpo",
+    usd: process.env.STRIPE_PRICE_TRIPLE_USD || "price_1UdGkZPVvmLFhcXKRzizGOce",
+  },
+  orderBump: {
+    gbp: process.env.STRIPE_PRICE_BUMP_GBP || "price_1UdGkbPVvmLFhcXK8G5nx07C",
+    usd: process.env.STRIPE_PRICE_BUMP_USD || "price_1UdGkiPVvmLFhcXK4etO741j",
+  },
+};
+
 export const PRODUCT_CONFIG = {
   brandName: "CozyGlow™",
   productTitle:
