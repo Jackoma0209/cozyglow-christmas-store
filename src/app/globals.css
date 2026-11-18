@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #fffdf8;
+    color: #10241d;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@keyframes chimneySteam {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(0.55);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.78;
+  }
+  55% {
+    transform: translateY(-48px) translateX(-7px) scale(1.15);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(-98px) translateX(10px) scale(1.75);
+    opacity: 0;
+  }
+}
+
+@keyframes windowGlowPulse {
+  0%,
+  100% {
+    opacity: 0.86;
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.75));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 22px rgba(245, 158, 11, 0.95));
+  }
+}
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(-12px) translateX(0px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateY(260px) translateX(16px);
+    opacity: 0;
+  }
+}
+
+@keyframes subtleFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-chimney-steam-1 {
+  animation: chimneySteam 3.2s ease-out infinite;
+}
+
+.animate-chimney-steam-2 {
+  animation: chimneySteam 3.2s ease-out 1.05s infinite;
+}
+
+.animate-chimney-steam-3 {
+  animation: chimneySteam 3.2s ease-out 2.1s infinite;
+}
+
+.animate-window-glow {
+  animation: windowGlowPulse 2.8s ease-in-out infinite;
+}
+
+.animate-snowfall {
+  animation: snowfall linear infinite;
+}
+
+.animate-subtle-float {
+  animation: subtleFloat 3.6s ease-in-out infinite;
+}
