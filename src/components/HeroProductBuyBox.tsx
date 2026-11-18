@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -49,8 +50,32 @@ export function HeroProductBuyBox({
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [previewMist, setPreviewMist] = useState(true);
   const [previewGlow, setPreviewGlow] = useState(true);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+  const [failedVideos, setFailedVideos] = useState<Record<string, boolean>>({});
+  const [loadedVideos, setLoadedVideos] = useState<Record<string, boolean>>({});
+
+  const markImageLoaded = (src: string) => {
+    setLoadedImages((prev) => (prev[src] ? prev : { ...prev, [src]: true }));
+  };
+
+  const markImageFailed = (src: string) => {
+    setFailedImages((prev) => (prev[src] ? prev : { ...prev, [src]: true }));
+  };
+
+  const syncCachedImageState = (src: string, el: HTMLImageElement | null) => {
+    if (!el || !el.complete) return;
+    if (el.naturalWidth === 0) {
+      if (!failedImages[src]) markImageFailed(src);
+    } else if (!loadedImages[src]) {
+      markImageLoaded(src);
+    }
+  };
 
   const activeSlide = GALLERY_SLIDES[activeSlideIndex];
+  const hasActiveVideo =
+    Boolean(activeSlide.videoSrc) && !failedVideos[activeSlide.videoSrc!];
+  const hasActiveImage = !hasActiveVideo && !failedImages[activeSlide.imageSrc];
   const currencyMeta = CURRENCIES[currency];
   const selectedBundle =
     BUNDLE_TIERS.find((b) => b.id === selectedBundleId) ?? BUNDLE_TIERS[1];
@@ -75,6 +100,54 @@ export function HeroProductBuyBox({
                 glowActive={previewGlow}
                 intensity="steady"
               />
+
+              {hasActiveVideo && activeSlide.videoSrc && (
+                <video
+                  key={activeSlide.videoSrc}
+                  src={activeSlide.videoSrc}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  onLoadedData={() =>
+                    setLoadedVideos((prev) =>
+                      prev[activeSlide.videoSrc!]
+                        ? prev
+                        : { ...prev, [activeSlide.videoSrc!]: true }
+                    )
+                  }
+                  onError={() =>
+                    setFailedVideos((prev) =>
+                      prev[activeSlide.videoSrc!]
+                        ? prev
+                        : { ...prev, [activeSlide.videoSrc!]: true }
+                    )
+                  }
+                  className={cn(
+                    "absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300",
+                    loadedVideos[activeSlide.videoSrc]
+                      ? "opacity-100"
+                      : "opacity-0 pointer-events-none"
+                  )}
+                />
+              )}
+
+              {hasActiveImage && (
+                <img
+                  key={activeSlide.imageSrc}
+                  ref={(el) => syncCachedImageState(activeSlide.imageSrc, el)}
+                  src={activeSlide.imageSrc}
+                  alt={`${PRODUCT_CONFIG.shortProductName} — ${activeSlide.shortTitle}`}
+                  onLoad={() => markImageLoaded(activeSlide.imageSrc)}
+                  onError={() => markImageFailed(activeSlide.imageSrc)}
+                  className={cn(
+                    "absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300",
+                    loadedImages[activeSlide.imageSrc]
+                      ? "opacity-100"
+                      : "opacity-0 pointer-events-none"
+                  )}
+                />
+              )}
 
               {/* Top-left Live Preview Status Pill */}
               <div className="absolute top-4 left-4 z-30 flex flex-wrap items-center gap-2">
@@ -145,12 +218,27 @@ export function HeroProductBuyBox({
                         : "border-pine-900/15 hover:border-pine-900/40"
                     )}
                   >
-                    <div className="aspect-square rounded-xl overflow-hidden mb-1.5">
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-1.5">
                       <CottageVisual
                         scene={slide.scene}
                         mistActive={slide.scene !== "giftbox"}
                         glowActive
                       />
+                      {!failedImages[slide.imageSrc] && (
+                        <img
+                          ref={(el) => syncCachedImageState(slide.imageSrc, el)}
+                          src={slide.imageSrc}
+                          alt={slide.shortTitle}
+                          onLoad={() => markImageLoaded(slide.imageSrc)}
+                          onError={() => markImageFailed(slide.imageSrc)}
+                          className={cn(
+                            "absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300",
+                            loadedImages[slide.imageSrc]
+                              ? "opacity-100"
+                              : "opacity-0 pointer-events-none"
+                          )}
+                        />
+                      )}
                     </div>
                     <p className="text-[10px] sm:text-[11px] font-bold text-pine-950 leading-tight line-clamp-2 px-0.5">
                       {slide.shortTitle}

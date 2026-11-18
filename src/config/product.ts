@@ -59,6 +59,8 @@ export interface GallerySlide {
   caption: string;
   badge: string;
   scene: "chimney" | "night" | "cutaway" | "mantel" | "giftbox";
+  imageSrc: string;
+  videoSrc?: string;
 }
 
 export interface AmbianceMode {
@@ -268,6 +270,8 @@ export const GALLERY_SLIDES: GallerySlide[] = [
       "Hypnotic cool micro-mist curls gently out of the snow-dusted brick chimney for 6–8 hours.",
     badge: "Live Steam Effect",
     scene: "chimney",
+    imageSrc: "/images/products/01-chimney-mist-hero.jpg",
+    videoSrc: "/images/products/chimney-mist-loop.mp4",
   },
   {
     id: "night-glow",
@@ -277,6 +281,7 @@ export const GALLERY_SLIDES: GallerySlide[] = [
       "2200K flicker-free hearth LEDs illuminate frosted timber windows without blinding blue light.",
     badge: "2200K Amber Hearth",
     scene: "night",
+    imageSrc: "/images/products/02-warm-window-glow.jpg",
   },
   {
     id: "oil-cutaway",
@@ -286,6 +291,7 @@ export const GALLERY_SLIDES: GallerySlide[] = [
       "Lift the snowy roof to access the 200ml ultrasonic tank — add 200ml water and 3–4 festive drops.",
     badge: "200ml Lift-Roof Tank",
     scene: "cutaway",
+    imageSrc: "/images/products/03-essential-oil-fill.jpg",
   },
   {
     id: "mantel-village",
@@ -295,6 +301,7 @@ export const GALLERY_SLIDES: GallerySlide[] = [
       "Pair 2 or 3 cottages across your fireplace mantel, bookshelf, or dining centerpiece.",
     badge: "Village Centerpiece",
     scene: "mantel",
+    imageSrc: "/images/products/04-mantel-village-setup.jpg",
   },
   {
     id: "gift-box",
@@ -304,6 +311,7 @@ export const GALLERY_SLIDES: GallerySlide[] = [
       "Arrives in protective Nordic keepsake packaging ready for under the tree or Secret Santa.",
     badge: "Gift-Ready Box",
     scene: "giftbox",
+    imageSrc: "/images/products/05-gift-box-unboxing.jpg",
   },
 ];
 

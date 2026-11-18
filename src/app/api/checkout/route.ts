@@ -35,11 +35,6 @@ export async function POST(req: NextRequest) {
     const bumpUnitAmount = Math.round(
       (currency === "gbp" ? ORDER_BUMP.priceGbp : ORDER_BUMP.priceUsd) * 100
     );
-    const shippingAmount = bundle.freeShipping
-      ? 0
-      : currency === "gbp"
-      ? 495
-      : 695;
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
@@ -64,23 +59,6 @@ export async function POST(req: NextRequest) {
             description: ORDER_BUMP.subtitle,
           },
           unit_amount: bumpUnitAmount,
-        },
-        quantity: 1,
-      });
-    }
-
-    if (shippingAmount > 0) {
-      lineItems.push({
-        price_data: {
-          currency,
-          product_data: {
-            name: "Tracked Holiday Express Shipping",
-            description:
-              currency === "gbp"
-                ? "Royal Mail Tracked 48® / DPD Express (5–7 business days)"
-                : "USPS Priority / FedEx Tracked (5–7 business days)",
-          },
-          unit_amount: shippingAmount,
         },
         quantity: 1,
       });
@@ -114,9 +92,44 @@ export async function POST(req: NextRequest) {
       shipping_address_collection: {
         allowed_countries: ["GB", "US", "CA", "AU", "IE"],
       },
-      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}&bundle=${bundle.id}&currency=${currency}&bump=${
+      phone_number_collection: {
+        enabled: true,
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: 0,
+              currency,
+            },
+            display_name:
+              "Free Tracked Express Holiday Delivery (4–7 Business Days)",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 4 },
+              maximum: { unit: "business_day", value: 7 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: 495,
+              currency,
+            },
+            display_name:
+              "Priority Insured Pre-Christmas Dispatch (2–4 Business Days)",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 2 },
+              maximum: { unit: "business_day", value: 4 },
+            },
+          },
+        },
+      ],
+      success_url: `${origin}/success?bundle=${bundle.id}&currency=${currency}&bump=${
         includeOrderBump ? "1" : "0"
-      }`,
+      }&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
     });
 
