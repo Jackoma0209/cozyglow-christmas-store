@@ -273,8 +273,8 @@ export function HeroProductBuyBox({
               <div className="rounded-2xl bg-cream-100 border border-pine-900/10 p-3 flex items-center gap-2.5">
                 <Zap className="w-5 h-5 text-amber-600 shrink-0" />
                 <div>
-                  <p className="text-xs font-bold text-pine-950">USB-C Powered</p>
-                  <p className="text-[11px] text-pine-700">200ml • 6–8 hrs</p>
+                  <p className="text-xs font-bold text-pine-950">100% Cordless</p>
+                  <p className="text-[11px] text-pine-700">3× AAA • No Wires</p>
                 </div>
               </div>
               <div className="rounded-2xl bg-cream-100 border border-pine-900/10 p-3 flex items-center gap-2.5">
@@ -313,7 +313,7 @@ export function HeroProductBuyBox({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-crimson-600 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-crimson-600" />
                 </span>
-                Only {currencyMeta.stockCount} cottages left in UK/US Express Warehouse
+                Only {currencyMeta.stockCount} cottages left in this Holiday Batch
               </div>
             </div>
 
@@ -327,9 +327,8 @@ export function HeroProductBuyBox({
               </p>
               <p className="text-xs font-semibold text-pine-700 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-emerald-700" />
-                Dispatching daily from{" "}
                 <span className="text-pine-950 underline decoration-amber-400/80 underline-offset-2">
-                  {currencyMeta.warehouseLabel}
+                  Tracked Pre-Christmas Delivery ({currencyMeta.deliveryEta})
                 </span>{" "}
                 via {currencyMeta.courierLabel}
               </p>
@@ -495,7 +494,7 @@ export function HeroProductBuyBox({
               >
                 <Lock className="w-4 h-4 text-amberGlow-300 shrink-0" />
                 <span>
-                  Claim My CozyGlow™ Now — Ships Within 24 Hours (
+                  Claim My CozyGlow™ Now — Tracked Holiday Delivery (
                   {formatMoney(totalAmount, currency)})
                 </span>
               </button>

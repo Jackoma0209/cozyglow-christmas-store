@@ -130,7 +130,7 @@ export function CheckoutDrawer({
                 Your Holiday Express Bag
               </h2>
               <p className="text-[11px] text-amberGlow-300 mt-1 font-medium">
-                Dispatches within 24h • {currencyMeta.warehouseLabel}
+                Tracked Pre-Christmas Delivery • {currencyMeta.deliveryEta}
               </p>
             </div>
           </div>
@@ -223,8 +223,8 @@ export function CheckoutDrawer({
                   {activeBundle.name}
                 </p>
                 <p className="text-xs text-pine-700 mt-0.5">
-                  Qty: {activeBundle.quantity} Cottage Diffuser
-                  {activeBundle.quantity > 1 ? "s" : ""} + USB-C Cable
+                  Qty: {activeBundle.quantity} Cordless Cottage Diffuser
+                  {activeBundle.quantity > 1 ? "s" : ""}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-sm font-extrabold text-pine-950">
@@ -296,7 +296,7 @@ export function CheckoutDrawer({
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-crimson-700 uppercase">
                     <Gift className="w-3 h-3" />
-                    Order Bump
+                    Protection Add-On
                   </span>
                   <span className="text-xs font-extrabold text-crimson-700">
                     +{formatMoney(bumpPricing.price, currency)}

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title:
     "CozyGlow™ — Nordic Christmas Cottage Aroma Diffuser & Chimney Humidifier",
   description:
-    "USB-C powered snowy winter cottage humidifier that puffs gentle aromatic mist out of the chimney while casting a warm 2200K fireplace LED glow through frosted cottage windows. Fast UK & US dispatch.",
+    "Cordless snowy winter cottage humidifier that puffs gentle aromatic mist out of the chimney while casting a warm 2200K fireplace LED glow through frosted cottage windows. Tracked UK & US holiday delivery.",
   openGraph: {
     title: "CozyGlow™ — Christmas Cottage Chimney Mist Diffuser",
     description:

@@ -39,15 +39,15 @@ const POLICY_CONTENT: Record<
     sections: [
       {
         heading: "1. Seasonal Dispatch & Fulfillment",
-        text: "Orders placed prior to our daily warehouse cutoff ship within 24 hours via Royal Mail Tracked 48® / DPD Express (UK) or USPS Priority / FedEx Tracked (US). Standard tracked transit takes 5–7 business days.",
+        text: "Orders ship with full online tracking and typically arrive in 8–12 business days via Royal Mail / Evri Tracked (UK) or USPS / Tracked Holiday Courier (US).",
       },
       {
         heading: "2. Product Usage & Safety",
-        text: "CozyGlow™ Nordic Christmas Cottage Diffusers are designed for 5V/1A USB-C operation with clean tap or filtered water and water-soluble essential oils. Always place on a flat, stable surface.",
+        text: "CozyGlow™ Nordic Christmas Cottage Diffusers are cordless and require 3× AAA batteries (not included), operated with clean water and optional water-soluble essential oils. Always place on a flat, stable surface.",
       },
       {
         heading: "3. Pricing & Bundles",
-        text: "Promotional bundle savings (up to 56% off) and bonus Essential Oil Sets apply automatically while current UK/US Express Warehouse inventory lasts.",
+        text: "Promotional bundle savings (up to 56% off) apply automatically while current holiday batch inventory lasts.",
       },
     ],
   },

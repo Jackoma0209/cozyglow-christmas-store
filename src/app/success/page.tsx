@@ -282,7 +282,7 @@ function SuccessContent() {
                   <span className="font-mono font-bold text-pine-950">
                     {orderReference}
                   </span>{" "}
-                  • Ships from {currencyMeta.warehouseLabel}
+                  • {currencyMeta.warehouseLabel}
                   {verifiedOrder?.shippingCity
                     ? ` → ${verifiedOrder.shippingCity}${
                         verifiedOrder.shippingCountry
@@ -348,8 +348,8 @@ function SuccessContent() {
                   <div>
                     <p className="font-bold text-pine-950">{bundle.name}</p>
                     <p className="text-xs text-pine-700">
-                      {bundle.quantity}x CozyGlow™ Cottage Diffuser + Braided
-                      USB-C Cable
+                      {bundle.quantity}x Cordless CozyGlow™ Cottage Diffuser
+                      {bundle.quantity > 1 ? "s" : ""}
                     </p>
                   </div>
                   <span className="font-bold text-pine-950">
@@ -361,10 +361,11 @@ function SuccessContent() {
                   <div className="flex items-center justify-between text-sm">
                     <div>
                       <p className="font-bold text-pine-950">
-                        Festive Essential Oil Trio + Gift Box Wrapping
+                        {ORDER_BUMP.title}
                       </p>
                       <p className="text-xs text-pine-700">
-                        Pine Forest, Cinnamon Hearth &amp; Winter Berry
+                        Priority Holiday Dispatch + 100% Breakage &amp; Loss
+                        Coverage
                       </p>
                     </div>
                     <span className="font-bold text-pine-950">
@@ -379,10 +380,10 @@ function SuccessContent() {
               <div className="flex items-center justify-between text-sm bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                 <div>
                   <p className="font-bold text-emerald-900">
-                    VIP Add-On Confirmed: 1x Extra Cottage + 6-Oil Scent Vault
+                    VIP Add-On Confirmed: 1x Extra CozyGlow™ Cottage
                   </p>
                   <p className="text-xs text-emerald-800">
-                    Merged into your priority box with zero extra shipping
+                    Cordless 3× AAA design • FREE tracked shipping included
                   </p>
                 </div>
                 <span className="font-bold text-emerald-900">

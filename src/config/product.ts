@@ -118,9 +118,9 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyMeta> = {
     symbol: "£",
     label: "GBP (£)",
     flag: "🇬🇧",
-    warehouseLabel: "UK Express Warehouse (Birmingham)",
-    courierLabel: "Royal Mail Tracked 48® / DPD Express",
-    deliveryEta: "5–7 business days",
+    warehouseLabel: "Tracked Holiday Dispatch",
+    courierLabel: "Royal Mail / Evri Tracked Delivery",
+    deliveryEta: "8–12 business days",
     stockCount: 14,
   },
   usd: {
@@ -128,9 +128,9 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyMeta> = {
     symbol: "$",
     label: "USD ($)",
     flag: "🇺🇸",
-    warehouseLabel: "US Express Warehouse (New Jersey)",
-    courierLabel: "USPS Priority / FedEx Tracked",
-    deliveryEta: "5–7 business days",
+    warehouseLabel: "Tracked Holiday Dispatch",
+    courierLabel: "USPS / Tracked Holiday Courier",
+    deliveryEta: "8–12 business days",
     stockCount: 14,
   },
 };
@@ -162,8 +162,8 @@ export const STRIPE_PRICE_IDS: Record<
     usd: process.env.STRIPE_PRICE_TRIPLE_USD || "price_1UdGkZPVvmLFhcXKRzizGOce",
   },
   orderBump: {
-    gbp: process.env.STRIPE_PRICE_BUMP_GBP || "price_1UdGkbPVvmLFhcXK8G5nx07C",
-    usd: process.env.STRIPE_PRICE_BUMP_USD || "price_1UdGkiPVvmLFhcXK4etO741j",
+    gbp: process.env.STRIPE_PRICE_BUMP_GBP || "price_1UehJdPVvmLFhcXKUkHodeEo",
+    usd: process.env.STRIPE_PRICE_BUMP_USD || "price_1UehJlPVvmLFhcXKfDbcHel4",
   },
 };
 
@@ -184,7 +184,7 @@ export const PRODUCT_CONFIG = {
   rating: 4.9,
   reviewCount: 1428,
   valueProposition:
-    "USB-C powered snowy winter cottage humidifier that puffs gentle aromatic mist directly out of the chimney while casting a warm fireplace LED glow through frosted cottage windows.",
+    "Cordless snowy winter cottage humidifier that puffs gentle aromatic mist directly out of the chimney while casting a warm fireplace LED glow through frosted cottage windows — zero messy wires.",
   urgencyBar: {
     countdownInitialSeconds: 4 * 3600 + 18 * 60 + 42,
     prefix: "Order within",
@@ -197,12 +197,13 @@ export const PRODUCT_CONFIG = {
     vexroanUrl:
       "https://vexroan.com/products/christmas-cottage-mist-diffuser-with-glowing-windows",
     sellTheTrendUrl: "https://www.sellthetrend.com/niche/seasonal",
+    supplierUrl: "https://www.aliexpress.com/item/1005013551331144.html",
   },
   specs: {
     tankCapacity: "200ml Reservoir",
     runtime: "6–8 Hours Continuous Chimney Mist",
     noise: "<25dB Whisper-Quiet Ultrasonic",
-    power: "USB-C Powered (Braided Cable Included)",
+    power: "Cordless 3× AAA Batteries (Not Included)",
     ledTemp: "2200K Warm Fireplace Glow",
     safety: "Cool Mist • Zero Flame • Auto Shut-Off",
   },
@@ -226,15 +227,15 @@ export const BUNDLE_TIERS: BundleTier[] = [
     badge: "Save 38%",
     freeShipping: false,
     includes: [
-      "1x CozyGlow™ Nordic Cottage Diffuser",
-      "1x Braided Snow-White USB-C Cable",
-      "Tracked Holiday Courier Dispatch (24h)",
+      "1x CozyGlow™ Nordic Cottage Diffuser (Red-Roof Edition)",
+      "100% Cordless Design (3× AAA Batteries — Zero Messy Cords)",
+      "Tracked Pre-Christmas Delivery (8–12 Business Days)",
     ],
   },
   {
     id: "double",
     name: '"Gift One, Keep One" 2x Cottage Bundle',
-    shortLabel: "2x Cottages + Free Oil Trio",
+    shortLabel: "2x Cottages (Save 50%)",
     tagline: "Keep one on your mantel & gift one ready-to-wrap",
     quantity: 2,
     priceGbp: 64.95,
@@ -246,16 +247,16 @@ export const BUNDLE_TIERS: BundleTier[] = [
     isPopular: true,
     freeShipping: true,
     includes: [
-      "2x CozyGlow™ Nordic Cottage Diffusers",
-      "FREE Festive Essential Oil Trio (Pine, Cinnamon & Berry)",
-      "FREE Tracked Express Shipping",
+      "2x CozyGlow™ Nordic Cottage Diffusers (Red-Roof Edition)",
+      "100% Cordless Placement Anywhere in Your Home",
+      "FREE Tracked Pre-Christmas Shipping",
     ],
   },
   {
     id: "triple",
-    name: '"Full Winter Village" 3x Cottage Bundle + 6 Scents',
-    shortLabel: "3x Cottages + 6 Holiday Scents",
-    tagline: "Create an animated mantelpiece village with all 6 collector oils",
+    name: '"Full Winter Village" 3x Cottage Collector Set',
+    shortLabel: "3x Unique Cottage Styles",
+    tagline: "All 3 collector styles: Red-Roof Cottage, Holly Manor & Snowy Bow",
     quantity: 3,
     priceGbp: 84.95,
     compareAtGbp: 194.85,
@@ -266,41 +267,41 @@ export const BUNDLE_TIERS: BundleTier[] = [
     isBestValue: true,
     freeShipping: true,
     includes: [
-      "3x CozyGlow™ Nordic Cottage Diffusers",
-      "6 Holiday Scents (Cinnamon Bark, Pine Needle, Spiced Clove, Roasted Chestnut, Peppermint Frost, Vanilla Fireside)",
-      "FREE VIP Insured Delivery + 3x Gift Boxes",
+      "3x CozyGlow™ Diffusers (Red-Roof, Holly Manor & Snowy Bow)",
+      "100% Cordless Mantel Village — Zero Trailing Wires",
+      "FREE Tracked Pre-Christmas Shipping",
     ],
   },
 ];
 
 export const ORDER_BUMP: OrderBumpConfig = {
-  id: "festive-oil-trio",
+  id: "priority-breakage-protection",
   title:
-    "Festive Essential Oil Trio (Pine Forest, Cinnamon Hearth & Winter Berry) + Luxury Gift Box Wrapping",
+    "Priority Holiday Queue + 100% Transit Breakage & Loss Protection",
   subtitle:
-    "Pure water-soluble botanical blends formulated for ultrasonic chimney misting — zero residue, instant Christmas cabin aroma.",
-  priceGbp: 9.95,
-  compareAtGbp: 24.95,
-  priceUsd: 12.95,
-  compareAtUsd: 32.95,
-  badge: "ONE-TIME ADD-ON • 60% OFF",
+    "Priority dispatch handling plus instant free replacement if your resin cottage is ever damaged or lost in transit.",
+  priceGbp: 4.95,
+  compareAtGbp: 12.95,
+  priceUsd: 6.95,
+  compareAtUsd: 16.95,
+  badge: "RECOMMENDED PROTECTION",
 };
 
 export const POST_PURCHASE_UPSELL: PostPurchaseUpsellConfig = {
-  id: "vip-extra-cottage-vault",
+  id: "vip-extra-cottage",
   title:
-    "VIP Warehouse Priority Add-On: 1x Extra CozyGlow™ Cottage + Full 6-Oil Holiday Scent Vault",
+    "VIP Priority Add-On: 1x Extra CozyGlow™ Christmas Cottage",
   subtitle:
-    "Your parcel is still being packed in our Express Warehouse! Add a spare cottage for a last-minute Secret Santa or bedroom upgrade before the courier scans your label.",
-  priceGbp: 24.95,
+    "Add a spare cordless cottage for a last-minute Secret Santa or bedroom upgrade at our lowest VIP rate.",
+  priceGbp: 29.95,
   compareAtGbp: 64.95,
-  priceUsd: 34.95,
+  priceUsd: 39.95,
   compareAtUsd: 89.95,
-  discountBadge: "62% POST-CHECKOUT VIP SAVINGS",
+  discountBadge: "54% POST-CHECKOUT VIP SAVINGS",
   bullets: [
     "1x Additional CozyGlow™ Nordic Cottage Diffuser",
-    "All 6 Winter Collector Scents (10ml dropper bottles)",
-    "Ships inside your existing priority box — £0/$0 extra shipping",
+    "100% Cordless 3× AAA design — place anywhere with zero wires",
+    "FREE Tracked Pre-Christmas Shipping included",
   ],
 };
 
@@ -493,7 +494,7 @@ export const REVIEWS: ReviewItem[] = [
     location: "Denver, CO",
     rating: 5,
     title: "Set up all 3 cottages as an animated village centerpiece",
-    body: "Seeing three chimneys puffing pine-scented mist simultaneously down our dining table looks straight out of a storybook. Plugged all three into a discrete USB hub behind the runner and they run for 7+ hours straight.",
+    body: "Seeing three chimneys puffing pine-scented mist simultaneously down our dining table looks straight out of a storybook. Because they're completely cordless, there's zero messy wires trailing down the runner and they run all evening.",
     tag: "Full Village Setup",
     bundleBought: "3x Winter Village Bundle",
     sceneCaption: "Three cottages puffing together at dinner",
@@ -510,7 +511,7 @@ export const REVIEWS: ReviewItem[] = [
     title: "Way nicer than clinical plastic bedroom humidifiers",
     body: "Used to wake up with a dry throat from winter heating, but ugly white cylinder humidifiers ruined our bedroom vibe. This looks like a proper Scandinavian ornament during the day and becomes a warm mini hearth at night.",
     tag: "Bedside Table",
-    bundleBought: "1x Single Unit + Oil Trio",
+    bundleBought: "1x Single Unit + Breakage Protection",
     sceneCaption: "Bedside nightlight + eucalyptus mist",
     sceneTone: "bedside",
     imageSrc: "/images/products/02-warm-window-glow.jpg",
@@ -522,8 +523,8 @@ export const REVIEWS: ReviewItem[] = [
     author: "Rachel S.",
     location: "Chicago, IL",
     rating: 5,
-    title: "Arrived in 5 days packaged in gorgeous gift boxes",
-    body: "Ordered on Monday afternoon and tracked delivery landed Friday. The Pine Needle oil smells authentically like a fresh Douglas fir rather than synthetic air freshener. Already ordering another pair for my mum.",
+    title: "Arrived cleanly packed and ready to gift",
+    body: "Tracked delivery landed right on schedule. Added a few drops of our own pine needle oil and it smells authentically like a fresh Douglas fir rather than synthetic air freshener. Already ordering another pair for my mum.",
     tag: "Fast Holiday Delivery",
     bundleBought: "2x Cottage Bundle",
     sceneCaption: "Desk setup for winter WFH mornings",
@@ -558,7 +559,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   },
   {
     feature: "Reusable Year After Year",
-    cozyGlow: "Built for every Christmas season (USB-C)",
+    cozyGlow: "Built for every Christmas season (100% Cordless)",
     candles: "Burns out in ~20 hours (£30+ wasted)",
     plainHumidifier: "Gets hidden in a cupboard by guests",
     cozyWins: true,
@@ -574,9 +575,9 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 
 export const FAQS: FaqItem[] = [
   {
-    question: "How is CozyGlow™ powered and is a cable included?",
+    question: "How is CozyGlow™ powered — are there any messy cords?",
     answer:
-      "CozyGlow™ uses universal USB-C power (5V/1A) and includes a braided snow-white USB-C cable in every box. Plug it into any standard phone charger brick, power bank, laptop, or TV USB port for effortless placement anywhere on your mantel, shelf, or nightstand.",
+      "CozyGlow™ is 100% cordless and powered by 3× AAA batteries (not included), so you can place it anywhere on a fireplace mantel, dining centerpiece, bookshelf, or nightstand with zero unsightly wires.",
   },
   {
     question: "How large is the water tank and how long does the chimney mist last?",
@@ -591,12 +592,12 @@ export const FAQS: FaqItem[] = [
   {
     question: "Can I use my own essential oils or just plain water?",
     answer:
-      "Both! Run pure tap or filtered water for whisper-quiet (<25dB) winter humidity, or add 3–5 drops of our water-soluble Festive Essential Oils (or any standard aromatherapy oil) directly into the 200ml tank for instant Cinnamon, Pine, or Vanilla Fireside ambiance.",
+      "Both! Run plain water for gentle winter mist, or add 3–5 drops of your favourite standard water-soluble essential oils (pine, cinnamon, peppermint, or vanilla — oils sold separately) directly into the tank.",
   },
   {
     question: "How fast is shipping and what if I want to return it?",
     answer:
-      "Orders placed before the daily warehouse cutoff dispatch within 24 hours via Royal Mail Tracked 48® / DPD Express (UK) or USPS Priority / FedEx Tracked (US), arriving in 5–7 business days with full tracking. Every order is backed by our 30-Day Money-Back Holiday Guarantee.",
+      "All orders ship with full online tracking and arrive in 8–12 business days — comfortably in time for Christmas. Every order is backed by our 30-Day Money-Back Holiday Guarantee.",
   },
 ];
 

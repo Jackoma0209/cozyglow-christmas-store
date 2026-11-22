@@ -141,7 +141,7 @@ export function AmbianceConfigurator() {
                   2. Pair With Collector Holiday Scents
                 </p>
                 <span className="text-xs font-semibold text-emerald-700">
-                  Included Free in 3x Village Bundle
+                  Works With Any Essential Oil
                 </span>
               </div>
 

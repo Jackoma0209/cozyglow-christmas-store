@@ -182,11 +182,11 @@ export async function POST(req: NextRequest) {
               currency,
             },
             display_name: bundle.freeShipping
-              ? "Free Tracked Express Holiday Delivery (4–7 Business Days)"
-              : "Tracked Holiday Delivery (4–7 Business Days)",
+              ? "Free Tracked Pre-Christmas Delivery (8–12 Business Days)"
+              : "Tracked Pre-Christmas Delivery (8–12 Business Days)",
             delivery_estimate: {
-              minimum: { unit: "business_day", value: 4 },
-              maximum: { unit: "business_day", value: 7 },
+              minimum: { unit: "business_day", value: 8 },
+              maximum: { unit: "business_day", value: 12 },
             },
           },
         },
@@ -198,10 +198,10 @@ export async function POST(req: NextRequest) {
               currency,
             },
             display_name:
-              "Priority Insured Pre-Christmas Dispatch (2–4 Business Days)",
+              "Priority Insured Holiday Dispatch (6–10 Business Days)",
             delivery_estimate: {
-              minimum: { unit: "business_day", value: 2 },
-              maximum: { unit: "business_day", value: 4 },
+              minimum: { unit: "business_day", value: 6 },
+              maximum: { unit: "business_day", value: 10 },
             },
           },
         },

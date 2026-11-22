@@ -60,7 +60,7 @@ export function StickyBuyBar({
               </p>
               <p className="text-[11px] text-amberGlow-300 font-semibold">
                 {activeBundle.shortLabel}
-                {includeOrderBump ? " + Festive Oil Trio" : ""}
+                {includeOrderBump ? " + Breakage Protection" : ""}
               </p>
             </div>
           </div>

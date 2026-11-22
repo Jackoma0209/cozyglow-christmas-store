@@ -75,7 +75,7 @@ export function FaqSection({ currency, onClaimNow }: FaqSectionProps) {
                 {PRODUCT_CONFIG.guaranteeDays}-Day &ldquo;Cozy Home&rdquo; Money-Back Guarantee
               </h3>
               <p className="text-sm text-cream-200/85 leading-relaxed">
-                Try CozyGlow™ on your mantel or nightstand for a full 30 days. Dispatched within 24 hours via{" "}
+                Try CozyGlow™ on your mantel or nightstand for a full 30 days. Tracked holiday delivery via{" "}
                 <span className="text-amberGlow-300 font-semibold">
                   {currencyMeta.courierLabel}
                 </span>{" "}

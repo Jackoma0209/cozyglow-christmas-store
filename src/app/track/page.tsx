@@ -53,8 +53,8 @@ function buildStages(order: TrackOrderResult) {
     {
       title: "Packed in Protective Keepsake Box",
       detail:
-        "Packed with braided USB-C cable & protective holiday cushioning.",
-      time: current >= 1 ? "Completed" : "In Queue (Within 24h)",
+        "Packed in protective holiday cushioning for safe transit.",
+      time: current >= 1 ? "Completed" : "In Queue",
       done: current >= 1,
     },
     {
@@ -71,7 +71,7 @@ function buildStages(order: TrackOrderResult) {
         ? `Destination: ${order.shippingCity}${
             order.shippingCountry ? `, ${order.shippingCountry}` : ""
           }`
-        : "Estimated arrival 5–7 business days from dispatch.",
+        : "Estimated arrival 8–12 business days with full tracking.",
       time: current >= 3 ? "Delivered" : "Upcoming",
       done: current >= 3,
     },

@@ -129,7 +129,7 @@ export function CottageVisual({
                   CozyGlow™
                 </p>
                 <p className="text-[11px] text-pine-700 font-medium">
-                  Cottage Diffuser + Braided USB-C
+                  Cordless Cottage Diffuser
                 </p>
               </div>
             </div>
@@ -385,7 +385,7 @@ export function CottageVisual({
             <line x1="196" y1="118" x2="224" y2="118" stroke="#5C2D16" strokeWidth="2.5" />
           </g>
 
-          {/* Subtle USB-C Power Indicator Dot at Cottage Base */}
+          {/* Subtle Power Indicator Dot at Cottage Base */}
           <circle cx="292" cy="269" r="3" fill={glowActive ? "#34D399" : "#64748B"} />
         </svg>
       )}
