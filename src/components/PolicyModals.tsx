@@ -25,7 +25,7 @@ const POLICY_CONTENT: Record<
       },
       {
         heading: "2. Payment Security",
-        text: "We never store raw card numbers on our servers. All transactions are processed over PCI-DSS Level 1 compliant TLS encryption via Stripe Checkout, Apple Pay, Google Pay, and Klarna.",
+        text: "We never store raw card numbers on our servers. All transactions are processed over PCI-DSS Level 1 compliant TLS encryption via Stripe Checkout, Apple Pay, Link, and Klarna.",
       },
       {
         heading: "3. Cookies & Preferences",
@@ -65,7 +65,7 @@ const POLICY_CONTENT: Record<
       },
       {
         heading: "3. Fast Refund Turnaround",
-        text: "Approved refunds are credited back to your original payment method (card, Apple Pay, Google Pay, or Klarna) within 3–5 business days.",
+        text: "Approved refunds are credited back to your original payment method (card, Apple Pay, Link, or Klarna) within 3–5 business days.",
       },
     ],
   },

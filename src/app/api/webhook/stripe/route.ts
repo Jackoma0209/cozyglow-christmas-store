@@ -1,15 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { STRIPE_STORE_TAG } from "@/config/product";
+import {
+  CurrencyCode,
+  STRIPE_STORE_TAG,
+  getOrderReferenceFromSessionId,
+} from "@/config/product";
+import {
+  OrderEmailData,
+  forwardToFulfillmentWebhook,
+  sendOrderEmails,
+} from "@/lib/email";
+
+function formatShippingAddress(
+  shippingDetails: Stripe.Checkout.Session.ShippingDetails | null | undefined,
+  fallbackName?: string | null
+): string[] {
+  if (!shippingDetails?.address) return [];
+  const addr = shippingDetails.address;
+  const lines: string[] = [];
+  const recipient = shippingDetails.name || fallbackName;
+  if (recipient) lines.push(recipient);
+  if (addr.line1) lines.push(addr.line1);
+  if (addr.line2) lines.push(addr.line2);
+  const cityStatePostal = [addr.city, addr.state, addr.postal_code]
+    .filter(Boolean)
+    .join(", ");
+  if (cityStatePostal) lines.push(cityStatePostal);
+  if (addr.country) lines.push(addr.country);
+  return lines;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
 
     let event: Stripe.Event;
 
-    if (webhookSecret && webhookSecret.trim() !== "") {
+    if (!webhookSecret) {
+      if (process.env.NODE_ENV === "production") {
+        console.error(
+          "STRIPE_WEBHOOK_SECRET is missing in production; rejecting webhook."
+        );
+        return NextResponse.json(
+          { error: "Webhook signing secret is not configured." },
+          { status: 500 }
+        );
+      }
+      event = JSON.parse(rawBody) as Stripe.Event;
+    } else {
       const signature = req.headers.get("stripe-signature");
       if (!signature) {
         return NextResponse.json(
@@ -19,7 +59,7 @@ export async function POST(req: NextRequest) {
       }
 
       const stripe = new Stripe(
-        process.env.STRIPE_SECRET_KEY || "sk_webhook_signature_verifier"
+        stripeSecretKey || "sk_webhook_signature_verifier"
       );
 
       try {
@@ -33,27 +73,153 @@ export async function POST(req: NextRequest) {
           err instanceof Error ? err.message : "Invalid webhook signature.";
         return NextResponse.json({ error: message }, { status: 400 });
       }
-    } else {
-      event = JSON.parse(rawBody) as Stripe.Event;
     }
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
+    if (event.type !== "checkout.session.completed") {
+      return NextResponse.json({ received: true, ignored: true });
+    }
 
-      if (session.metadata?.store !== STRIPE_STORE_TAG) {
-        return NextResponse.json({ received: true, ignored: true });
+    const eventSession = event.data.object as Stripe.Checkout.Session;
+
+    if (eventSession.metadata?.store !== STRIPE_STORE_TAG) {
+      return NextResponse.json({ received: true, ignored: true });
+    }
+
+    const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
+
+    let session: Stripe.Checkout.Session = eventSession;
+    if (stripe) {
+      try {
+        session = await stripe.checkout.sessions.retrieve(eventSession.id, {
+          expand: [
+            "line_items",
+            "payment_intent",
+            "shipping_cost.shipping_rate",
+          ],
+        });
+      } catch (retrieveErr) {
+        console.warn(
+          "Could not expand Checkout Session inside webhook; falling back to event payload:",
+          retrieveErr
+        );
       }
+    }
 
+    const orderRef = getOrderReferenceFromSessionId(session.id);
+
+    const paymentIntentObj =
+      session.payment_intent && typeof session.payment_intent !== "string"
+        ? session.payment_intent
+        : null;
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : paymentIntentObj?.id ?? null;
+
+    if (paymentIntentObj?.metadata?.fulfillment_processed === "true") {
       return NextResponse.json({
         received: true,
-        ignored: false,
+        duplicate: true,
         store: STRIPE_STORE_TAG,
+        orderRef,
         sessionId: session.id,
-        metadata: session.metadata,
       });
     }
 
-    return NextResponse.json({ received: true, ignored: true });
+    const shippingDetails =
+      session.shipping_details ??
+      session.collected_information?.shipping_details ??
+      null;
+
+    const shippingRate =
+      session.shipping_cost?.shipping_rate &&
+      typeof session.shipping_cost.shipping_rate !== "string"
+        ? session.shipping_cost.shipping_rate
+        : null;
+
+    const currency: CurrencyCode =
+      session.currency === "usd" ? "usd" : "gbp";
+
+    const lineItems = (session.line_items?.data ?? []).map((li) => ({
+      description: li.description || "CozyGlow™ Item",
+      quantity: li.quantity ?? 1,
+      amountTotal: (li.amount_total ?? 0) / 100,
+    }));
+
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://cozyglow-christmas-store.vercel.app";
+
+    const orderData: OrderEmailData = {
+      orderRef,
+      sessionId: session.id,
+      paymentIntentId,
+      isUpsell: session.metadata?.type === "post_purchase_upsell",
+      parentOrderRef: session.metadata?.parentOrderRef ?? null,
+      bundleId: session.metadata?.bundleId ?? null,
+      cottageQty: session.metadata?.cottageQty
+        ? Number(session.metadata.cottageQty)
+        : null,
+      includeOrderBump: session.metadata?.includeOrderBump === "true",
+      customerName:
+        shippingDetails?.name || session.customer_details?.name || "Customer",
+      customerEmail: session.customer_details?.email ?? null,
+      customerPhone: session.customer_details?.phone ?? null,
+      shippingAddressLines: formatShippingAddress(
+        shippingDetails,
+        session.customer_details?.name
+      ),
+      shippingCountry: shippingDetails?.address?.country ?? null,
+      lineItems,
+      currency,
+      amountSubtotal: (session.amount_subtotal ?? 0) / 100,
+      amountShipping: (session.shipping_cost?.amount_total ?? 0) / 100,
+      amountTotal: (session.amount_total ?? 0) / 100,
+      shippingMethodLabel: shippingRate?.display_name ?? null,
+      siteUrl,
+    };
+
+    const [emailResult, forwardResult] = await Promise.allSettled([
+      sendOrderEmails(orderData),
+      forwardToFulfillmentWebhook(orderData),
+    ]);
+
+    if (stripe && paymentIntentId) {
+      try {
+        await stripe.paymentIntents.update(paymentIntentId, {
+          metadata: {
+            ...(paymentIntentObj?.metadata ?? {}),
+            order_ref: orderRef,
+            fulfillment_processed: "true",
+            fulfillment_status: "processing",
+          },
+        });
+      } catch (updateErr) {
+        console.error(
+          "Failed to stamp fulfillment metadata on PaymentIntent:",
+          updateErr
+        );
+      }
+    }
+
+    return NextResponse.json({
+      received: true,
+      ignored: false,
+      store: STRIPE_STORE_TAG,
+      orderRef,
+      sessionId: session.id,
+      metadata: session.metadata,
+      notifications: {
+        email:
+          emailResult.status === "fulfilled"
+            ? emailResult.value
+            : { error: "email_failed" },
+        webhookForward:
+          forwardResult.status === "fulfilled"
+            ? forwardResult.value
+            : { forwarded: false },
+      },
+    });
   } catch (error) {
     console.error("Stripe webhook error:", error);
     return NextResponse.json(

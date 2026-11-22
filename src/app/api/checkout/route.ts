@@ -6,6 +6,7 @@ import {
   CurrencyCode,
   ORDER_BUMP,
   PRODUCT_CONFIG,
+  SHIPPING_CONFIG,
   STRIPE_PRICE_IDS,
   STRIPE_SEASON_TAG,
   STRIPE_STORE_TAG,
@@ -127,12 +128,67 @@ export async function POST(req: NextRequest) {
       currency,
     };
 
+    const standardShippingAmount = bundle.freeShipping
+      ? 0
+      : Math.round(
+          (currency === "gbp"
+            ? SHIPPING_CONFIG.standardGbp
+            : SHIPPING_CONFIG.standardUsd) * 100
+        );
+
+    const priorityShippingAmount = bundle.freeShipping
+      ? Math.round(
+          (currency === "gbp"
+            ? SHIPPING_CONFIG.priorityUpgradeGbp
+            : SHIPPING_CONFIG.priorityUpgradeUsd) * 100
+        )
+      : Math.round(
+          (currency === "gbp"
+            ? SHIPPING_CONFIG.singlePriorityGbp
+            : SHIPPING_CONFIG.singlePriorityUsd) * 100
+        );
+
+    const shippingOptions: Stripe.Checkout.SessionCreateParams.ShippingOption[] =
+      [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: standardShippingAmount,
+              currency,
+            },
+            display_name: bundle.freeShipping
+              ? "Free Tracked Express Holiday Delivery (4–7 Business Days)"
+              : "Tracked Holiday Delivery (4–7 Business Days)",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 4 },
+              maximum: { unit: "business_day", value: 7 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: priorityShippingAmount,
+              currency,
+            },
+            display_name:
+              "Priority Insured Pre-Christmas Dispatch (2–4 Business Days)",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 2 },
+              maximum: { unit: "business_day", value: 4 },
+            },
+          },
+        },
+      ];
+
     const createSession = (
       lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
     ) =>
       stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
         mode: "payment",
+        allow_promotion_codes: true,
         line_items: lineItems,
         metadata: checkoutMetadata,
         payment_intent_data: {
@@ -144,38 +200,7 @@ export async function POST(req: NextRequest) {
         phone_number_collection: {
           enabled: true,
         },
-        shipping_options: [
-          {
-            shipping_rate_data: {
-              type: "fixed_amount",
-              fixed_amount: {
-                amount: 0,
-                currency,
-              },
-              display_name:
-                "Free Tracked Express Holiday Delivery (4–7 Business Days)",
-              delivery_estimate: {
-                minimum: { unit: "business_day", value: 4 },
-                maximum: { unit: "business_day", value: 7 },
-              },
-            },
-          },
-          {
-            shipping_rate_data: {
-              type: "fixed_amount",
-              fixed_amount: {
-                amount: 495,
-                currency,
-              },
-              display_name:
-                "Priority Insured Pre-Christmas Dispatch (2–4 Business Days)",
-              delivery_estimate: {
-                minimum: { unit: "business_day", value: 2 },
-                maximum: { unit: "business_day", value: 4 },
-              },
-            },
-          },
-        ],
+        shipping_options: shippingOptions,
         success_url: `${origin}/success?bundle=${bundle.id}&currency=${currency}&bump=${
           includeOrderBump ? "1" : "0"
         }&session_id={CHECKOUT_SESSION_ID}`,

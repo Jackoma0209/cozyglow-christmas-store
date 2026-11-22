@@ -1,12 +1,15 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { Suspense, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
+  AlertCircle,
   ArrowLeft,
   CheckCircle2,
   Gift,
+  Loader2,
   PackageCheck,
   ShieldCheck,
   Sparkles,
@@ -21,28 +24,135 @@ import {
   formatMoney,
   getBundlePricing,
   getOrderBumpPrice,
+  getOrderReferenceFromSessionId,
+  getStandardShippingFee,
 } from "@/config/product";
 import { CottageVisual } from "@/components/CottageVisual";
+import { trackPurchase } from "@/lib/analytics";
+
+interface VerifiedLineItem {
+  description: string;
+  quantity: number;
+  amountTotal: number;
+}
+
+interface VerifiedSessionData {
+  verified: boolean;
+  orderReference: string;
+  sessionId: string;
+  paymentStatus: string;
+  currency: CurrencyCode;
+  bundleId: string;
+  includeOrderBump: boolean;
+  amountSubtotal: number;
+  amountShipping: number;
+  amountTotal: number;
+  customerFirstName: string | null;
+  shippingCity: string | null;
+  shippingCountry: string | null;
+  lineItems: VerifiedLineItem[];
+  upsellVerified: boolean;
+  upsellAmountTotal: number;
+}
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const [upsellClaimed, setUpsellClaimed] = useState(false);
+  const [demoUpsellClaimed, setDemoUpsellClaimed] = useState(false);
+  const [upsellLoading, setUpsellLoading] = useState(false);
+  const [upsellError, setUpsellError] = useState<string | null>(null);
+  const [upsellThumbLoaded, setUpsellThumbLoaded] = useState(false);
+  const [upsellThumbFailed, setUpsellThumbFailed] = useState(false);
 
   const isDemo = searchParams.get("demo") === "true";
   const bundleParam = searchParams.get("bundle");
   const currencyParam = searchParams.get("currency");
   const bumpParam = searchParams.get("bump") === "1";
+  const sessionId = searchParams.get("session_id")?.trim() || null;
+  const upsellSessionId = searchParams.get("upsell_session_id")?.trim() || null;
+  const upsellCanceled = searchParams.get("upsell_canceled") === "true";
 
-  const currency: CurrencyCode = currencyParam === "usd" ? "usd" : "gbp";
+  const [verifying, setVerifying] = useState(Boolean(sessionId && !isDemo));
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [verifiedOrder, setVerifiedOrder] =
+    useState<VerifiedSessionData | null>(null);
+
+  useEffect(() => {
+    if (!sessionId || isDemo) {
+      setVerifying(false);
+      return;
+    }
+
+    let cancelled = false;
+    setVerifying(true);
+    setVerifyError(null);
+
+    const query = new URLSearchParams({ session_id: sessionId });
+    if (upsellSessionId) {
+      query.set("upsell_session_id", upsellSessionId);
+    }
+
+    fetch(`/api/checkout/session?${query.toString()}`)
+      .then(async (res) => {
+        const payload = await res.json();
+        if (!res.ok) {
+          throw new Error(
+            payload.error || "Could not verify Stripe order session."
+          );
+        }
+        return payload as VerifiedSessionData;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setVerifiedOrder(data);
+        setVerifying(false);
+
+        const isPaid =
+          data.paymentStatus === "paid" ||
+          data.paymentStatus === "no_payment_required";
+        if (isPaid) {
+          trackPurchase({
+            orderId: data.orderReference,
+            value: data.amountTotal,
+            currency: data.currency,
+            bundleId: data.bundleId,
+          });
+        }
+        if (data.upsellVerified && upsellSessionId) {
+          trackPurchase({
+            orderId: getOrderReferenceFromSessionId(upsellSessionId),
+            value: data.upsellAmountTotal,
+            currency: data.currency,
+            bundleId: POST_PURCHASE_UPSELL.id,
+          });
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setVerifyError(
+          err instanceof Error
+            ? err.message
+            : "Unable to verify live order details."
+        );
+        setVerifying(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, upsellSessionId, isDemo]);
+
+  const currency: CurrencyCode =
+    verifiedOrder?.currency ?? (currencyParam === "usd" ? "usd" : "gbp");
+
+  const resolvedBundleId = verifiedOrder?.bundleId ?? bundleParam;
   const bundle =
-    BUNDLE_TIERS.find((b) => b.id === bundleParam) ?? BUNDLE_TIERS[1];
+    BUNDLE_TIERS.find((b) => b.id === resolvedBundleId) ?? BUNDLE_TIERS[1];
+
   const bundlePricing = getBundlePricing(bundle, currency);
   const bumpPricing = getOrderBumpPrice(currency);
-  const shippingFee = bundle.freeShipping
-    ? 0
-    : currency === "gbp"
-    ? 4.95
-    : 6.95;
+  const shippingFee = verifiedOrder
+    ? verifiedOrder.amountShipping
+    : getStandardShippingFee(bundle, currency);
 
   const upsellPrice =
     currency === "gbp"
@@ -54,20 +164,60 @@ function SuccessContent() {
       : POST_PURCHASE_UPSELL.compareAtUsd;
 
   const orderReference = useMemo(() => {
-    const sessionId = searchParams.get("session_id");
-    if (sessionId && sessionId.length > 6) {
-      return `#CG-${sessionId.slice(-5).toUpperCase()}`;
+    if (verifiedOrder?.orderReference) {
+      return verifiedOrder.orderReference;
     }
-    return "#CG-84920";
-  }, [searchParams]);
+    return getOrderReferenceFromSessionId(sessionId);
+  }, [verifiedOrder, sessionId]);
 
-  const totalPaid =
-    bundlePricing.price +
-    (bumpParam ? bumpPricing.price : 0) +
-    shippingFee +
-    (upsellClaimed ? upsellPrice : 0);
+  const upsellClaimed =
+    Boolean(verifiedOrder?.upsellVerified) || demoUpsellClaimed;
+
+  const totalPaid = verifiedOrder
+    ? verifiedOrder.amountTotal +
+      (verifiedOrder.upsellVerified ? verifiedOrder.upsellAmountTotal : 0)
+    : bundlePricing.price +
+      (bumpParam ? bumpPricing.price : 0) +
+      shippingFee +
+      (demoUpsellClaimed ? upsellPrice : 0);
 
   const currencyMeta = CURRENCIES[currency];
+
+  const handleClaimUpsell = async () => {
+    setUpsellLoading(true);
+    setUpsellError(null);
+    try {
+      const response = await fetch("/api/checkout/upsell", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentSessionId: sessionId,
+          currency,
+          demoMode: isDemo || !sessionId,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.checkoutUrl) {
+        throw new Error(
+          data.error || "Unable to start VIP add-on checkout right now."
+        );
+      }
+
+      if (data.demoMode) {
+        setDemoUpsellClaimed(true);
+        setUpsellLoading(false);
+      } else {
+        window.location.href = data.checkoutUrl;
+      }
+    } catch (err) {
+      setUpsellError(
+        err instanceof Error
+          ? err.message
+          : "Could not start VIP add-on checkout."
+      );
+      setUpsellLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-cream-50 text-pine-950 py-10 px-4 sm:px-6">
@@ -82,6 +232,23 @@ function SuccessContent() {
 
         {/* Confirmation Header Card */}
         <div className="rounded-3xl bg-white border border-pine-900/15 p-6 sm:p-8 shadow-card-soft space-y-6">
+          {verifying && (
+            <div className="rounded-2xl bg-cream-100 border border-pine-900/10 p-4 flex items-center gap-3 text-sm font-semibold text-pine-800">
+              <Loader2 className="w-4 h-4 animate-spin text-crimson-700 shrink-0" />
+              <span>Verifying your Stripe payment confirmation...</span>
+            </div>
+          )}
+
+          {verifyError && (
+            <div className="rounded-2xl bg-amber-50 border border-amber-300 p-4 flex items-start gap-2.5 text-xs sm:text-sm text-amber-900">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
+              <span>
+                {verifyError} Showing estimated receipt details for reference{" "}
+                <strong className="font-mono">{orderReference}</strong>.
+              </span>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
@@ -90,16 +257,25 @@ function SuccessContent() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
-                    Order Confirmed
+                    {verifiedOrder?.paymentStatus === "unpaid"
+                      ? "Payment Processing"
+                      : "Order Confirmed"}
                   </span>
                   {isDemo && (
                     <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">
                       Interactive Demo Mode
                     </span>
                   )}
+                  {verifiedOrder && (
+                    <span className="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                      Stripe Verified
+                    </span>
+                  )}
                 </div>
                 <h1 className="font-serif text-2xl sm:text-3xl font-bold text-pine-950 mt-1">
-                  Thank You! Your CozyGlow™ Is Queued for Dispatch
+                  {verifiedOrder?.customerFirstName
+                    ? `Thank You, ${verifiedOrder.customerFirstName}! Your CozyGlow™ Is Queued`
+                    : "Thank You! Your CozyGlow™ Is Queued for Dispatch"}
                 </h1>
                 <p className="text-sm text-pine-700 mt-1">
                   Order Reference:{" "}
@@ -107,6 +283,13 @@ function SuccessContent() {
                     {orderReference}
                   </span>{" "}
                   • Ships from {currencyMeta.warehouseLabel}
+                  {verifiedOrder?.shippingCity
+                    ? ` → ${verifiedOrder.shippingCity}${
+                        verifiedOrder.shippingCountry
+                          ? `, ${verifiedOrder.shippingCountry}`
+                          : ""
+                      }`
+                    : ""}
                 </p>
               </div>
             </div>
@@ -140,46 +323,75 @@ function SuccessContent() {
               Order Summary
             </h2>
 
-            <div className="flex items-center justify-between text-sm">
-              <div>
-                <p className="font-bold text-pine-950">{bundle.name}</p>
-                <p className="text-xs text-pine-700">
-                  {bundle.quantity}x CozyGlow™ Cottage Diffuser + Braided USB-C Cable
-                </p>
-              </div>
-              <span className="font-bold text-pine-950">
-                {formatMoney(bundlePricing.price, currency)}
-              </span>
-            </div>
-
-            {bumpParam && (
-              <div className="flex items-center justify-between text-sm">
-                <div>
-                  <p className="font-bold text-pine-950">
-                    Festive Essential Oil Trio + Gift Box Wrapping
-                  </p>
-                  <p className="text-xs text-pine-700">
-                    Pine Forest, Cinnamon Hearth &amp; Winter Berry
-                  </p>
+            {verifiedOrder && verifiedOrder.lineItems.length > 0 ? (
+              verifiedOrder.lineItems.map((item, idx) => (
+                <div
+                  key={`${item.description}-${idx}`}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <div>
+                    <p className="font-bold text-pine-950">
+                      {item.description}
+                    </p>
+                    <p className="text-xs text-pine-700">
+                      Quantity: {item.quantity}
+                    </p>
+                  </div>
+                  <span className="font-bold text-pine-950">
+                    {formatMoney(item.amountTotal, currency)}
+                  </span>
                 </div>
-                <span className="font-bold text-pine-950">
-                  {formatMoney(bumpPricing.price, currency)}
-                </span>
-              </div>
+              ))
+            ) : (
+              <>
+                <div className="flex items-center justify-between text-sm">
+                  <div>
+                    <p className="font-bold text-pine-950">{bundle.name}</p>
+                    <p className="text-xs text-pine-700">
+                      {bundle.quantity}x CozyGlow™ Cottage Diffuser + Braided
+                      USB-C Cable
+                    </p>
+                  </div>
+                  <span className="font-bold text-pine-950">
+                    {formatMoney(bundlePricing.price, currency)}
+                  </span>
+                </div>
+
+                {bumpParam && (
+                  <div className="flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-bold text-pine-950">
+                        Festive Essential Oil Trio + Gift Box Wrapping
+                      </p>
+                      <p className="text-xs text-pine-700">
+                        Pine Forest, Cinnamon Hearth &amp; Winter Berry
+                      </p>
+                    </div>
+                    <span className="font-bold text-pine-950">
+                      {formatMoney(bumpPricing.price, currency)}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
             {upsellClaimed && (
               <div className="flex items-center justify-between text-sm bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                 <div>
                   <p className="font-bold text-emerald-900">
-                    VIP Add-On Added: 1x Extra Cottage + 6-Oil Scent Vault
+                    VIP Add-On Confirmed: 1x Extra Cottage + 6-Oil Scent Vault
                   </p>
                   <p className="text-xs text-emerald-800">
                     Merged into your priority box with zero extra shipping
                   </p>
                 </div>
                 <span className="font-bold text-emerald-900">
-                  {formatMoney(upsellPrice, currency)}
+                  {formatMoney(
+                    verifiedOrder?.upsellVerified
+                      ? verifiedOrder.upsellAmountTotal
+                      : upsellPrice,
+                    currency
+                  )}
                 </span>
               </div>
             )}
@@ -187,7 +399,9 @@ function SuccessContent() {
             <div className="flex items-center justify-between text-sm text-pine-800">
               <span>Tracked Holiday Delivery</span>
               <span className="font-semibold text-emerald-700">
-                {shippingFee === 0 ? "FREE" : formatMoney(shippingFee, currency)}
+                {shippingFee === 0
+                  ? "FREE"
+                  : formatMoney(shippingFee, currency)}
               </span>
             </div>
 
@@ -198,11 +412,32 @@ function SuccessContent() {
           </div>
         </div>
 
-        {/* Post-Purchase 1-Click VIP Upsell Offer */}
+        {/* Post-Purchase VIP Upsell Offer */}
         <div className="rounded-3xl bg-gradient-to-br from-pine-900 via-pine-950 to-[#0B1914] text-cream-50 border-2 border-amberGlow-400/60 p-6 sm:p-8 shadow-warm-glow">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-            <div className="md:col-span-4 aspect-square rounded-2xl overflow-hidden border border-white/15">
+            <div className="relative md:col-span-4 aspect-square rounded-2xl overflow-hidden border border-white/15 bg-pine-950">
               <CottageVisual scene="mantel" mistActive glowActive />
+              {!upsellThumbFailed && (
+                <img
+                  ref={(el) => {
+                    if (!el || !el.complete) return;
+                    if (el.naturalWidth === 0 && !upsellThumbFailed) {
+                      setUpsellThumbFailed(true);
+                    } else if (el.naturalWidth > 0 && !upsellThumbLoaded) {
+                      setUpsellThumbLoaded(true);
+                    }
+                  }}
+                  src="/images/products/04-mantel-village-setup.jpg"
+                  alt="CozyGlow™ Mantel Village Add-On"
+                  onLoad={() => setUpsellThumbLoaded(true)}
+                  onError={() => setUpsellThumbFailed(true)}
+                  className={`absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300 ${
+                    upsellThumbLoaded
+                      ? "opacity-100"
+                      : "opacity-0 pointer-events-none"
+                  }`}
+                />
+              )}
             </div>
 
             <div className="md:col-span-8 space-y-4">
@@ -227,31 +462,57 @@ function SuccessContent() {
                 ))}
               </ul>
 
+              {upsellCanceled && !upsellClaimed && (
+                <p className="text-xs text-amberGlow-300">
+                  No problem — your main order {orderReference} is still locked
+                  in. You can still claim this VIP add-on below before dispatch.
+                </p>
+              )}
+
+              {upsellError && (
+                <div className="rounded-xl bg-red-950/60 border border-red-400/40 px-3 py-2 text-xs text-red-200">
+                  {upsellError}
+                </div>
+              )}
+
               {upsellClaimed ? (
                 <div className="rounded-2xl bg-emerald-500/20 border border-emerald-400/50 p-4 flex items-center gap-3 text-emerald-200 text-sm font-bold">
                   <CheckCircle2 className="w-5 h-5 shrink-0" />
                   <span>
-                    1-Click VIP Add-On Confirmed! Included inside shipment {orderReference}.
+                    VIP Add-On Confirmed! Included inside shipment{" "}
+                    {orderReference}.
                   </span>
                 </div>
               ) : (
                 <button
                   type="button"
-                  onClick={() => setUpsellClaimed(true)}
-                  className="w-full rounded-2xl bg-amberGlow-400 hover:bg-amberGlow-300 text-pine-950 font-extrabold py-4 px-5 text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2"
+                  disabled={upsellLoading}
+                  onClick={handleClaimUpsell}
+                  className="w-full rounded-2xl bg-amberGlow-400 hover:bg-amberGlow-300 disabled:opacity-70 text-pine-950 font-extrabold py-4 px-5 text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2"
                 >
-                  <span>
-                    1-Click Add to My Box — {formatMoney(upsellPrice, currency)}
-                  </span>
-                  <span className="text-xs line-through opacity-70">
-                    {formatMoney(upsellCompareAt, currency)}
-                  </span>
+                  {upsellLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Opening Express VIP Checkout...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>
+                        Add to My Priority Box —{" "}
+                        {formatMoney(upsellPrice, currency)}
+                      </span>
+                      <span className="text-xs line-through opacity-70">
+                        {formatMoney(upsellCompareAt, currency)}
+                      </span>
+                    </>
+                  )}
                 </button>
               )}
 
               <p className="text-[11px] text-cream-200/70 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Covered by your existing 30-Day Money-Back Guarantee • {ORDER_BUMP.badge}
+                Covered by your existing 30-Day Money-Back Guarantee •{" "}
+                {ORDER_BUMP.badge}
               </p>
             </div>
           </div>

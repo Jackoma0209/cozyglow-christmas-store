@@ -76,6 +76,12 @@ export function HeroProductBuyBox({
   const hasActiveVideo =
     Boolean(activeSlide.videoSrc) && !failedVideos[activeSlide.videoSrc!];
   const hasActiveImage = !hasActiveVideo && !failedImages[activeSlide.imageSrc];
+  const isRealMediaVisible = Boolean(
+    (hasActiveVideo &&
+      activeSlide.videoSrc &&
+      loadedVideos[activeSlide.videoSrc]) ||
+      (hasActiveImage && loadedImages[activeSlide.imageSrc])
+  );
   const currencyMeta = CURRENCIES[currency];
   const selectedBundle =
     BUNDLE_TIERS.find((b) => b.id === selectedBundleId) ?? BUNDLE_TIERS[1];
@@ -93,7 +99,7 @@ export function HeroProductBuyBox({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* LEFT COLUMN: Interactive Media Gallery + Pure-CSS Animated Chimney Mist */}
           <div className="lg:col-span-6 lg:sticky lg:top-28 space-y-4">
-            <div className="relative rounded-3xl overflow-hidden border border-pine-900/15 bg-pine-950 shadow-card-soft aspect-[4/3] sm:aspect-[5/4]">
+            <div className="relative rounded-3xl overflow-hidden border border-pine-900/15 bg-pine-950 shadow-card-soft aspect-square sm:aspect-[5/4]">
               <CottageVisual
                 scene={activeSlide.scene}
                 mistActive={previewMist}
@@ -149,6 +155,11 @@ export function HeroProductBuyBox({
                 />
               )}
 
+              {/* Subtle bottom gradient overlay when real product media is shown */}
+              {isRealMediaVisible && (
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-pine-950/75 via-pine-950/30 to-transparent pointer-events-none z-20" />
+              )}
+
               {/* Top-left Live Preview Status Pill */}
               <div className="absolute top-4 left-4 z-30 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-pine-950/85 backdrop-blur-md text-amberGlow-300 border border-amber-300/30 px-3 py-1 text-xs font-semibold">
@@ -171,34 +182,36 @@ export function HeroProductBuyBox({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 self-start sm:self-end">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewMist((v) => !v)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border transition-all backdrop-blur-md",
-                      previewMist
-                        ? "bg-white/95 text-pine-950 border-white shadow"
-                        : "bg-pine-950/70 text-cream-100 border-white/20"
-                    )}
-                  >
-                    <Wind className="w-3.5 h-3.5" />
-                    Mist: {previewMist ? "ON" : "OFF"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewGlow((v) => !v)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border transition-all backdrop-blur-md",
-                      previewGlow
-                        ? "bg-amberGlow-400 text-pine-950 border-amberGlow-300 shadow"
-                        : "bg-pine-950/70 text-cream-100 border-white/20"
-                    )}
-                  >
-                    <Flame className="w-3.5 h-3.5" />
-                    LED: {previewGlow ? "2200K" : "OFF"}
-                  </button>
-                </div>
+                {!isRealMediaVisible && (
+                  <div className="flex items-center gap-2 self-start sm:self-end">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewMist((v) => !v)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border transition-all backdrop-blur-md",
+                        previewMist
+                          ? "bg-white/95 text-pine-950 border-white shadow"
+                          : "bg-pine-950/70 text-cream-100 border-white/20"
+                      )}
+                    >
+                      <Wind className="w-3.5 h-3.5" />
+                      Mist: {previewMist ? "ON" : "OFF"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewGlow((v) => !v)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border transition-all backdrop-blur-md",
+                        previewGlow
+                          ? "bg-amberGlow-400 text-pine-950 border-amberGlow-300 shadow"
+                          : "bg-pine-950/70 text-cream-100 border-white/20"
+                      )}
+                    >
+                      <Flame className="w-3.5 h-3.5" />
+                      LED: {previewGlow ? "2200K" : "OFF"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -492,10 +505,10 @@ export function HeroProductBuyBox({
                 <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold text-pine-900">
                   {[
                     "Apple Pay",
-                    "Google Pay",
                     "Visa",
                     "Mastercard",
                     "Klarna",
+                    "Link",
                   ].map((badge) => (
                     <span
                       key={badge}

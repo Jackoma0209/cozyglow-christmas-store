@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
-import { BadgeCheck, Play, Star, ThumbsUp } from "lucide-react";
+import { BadgeCheck, Camera, Star, ThumbsUp } from "lucide-react";
 import { PRODUCT_CONFIG, REVIEWS, ReviewItem } from "@/config/product";
 import { CottageVisual } from "./CottageVisual";
 
@@ -16,6 +17,8 @@ const SCENE_BADGE_MAP: Record<ReviewItem["sceneTone"], string> = {
 
 export function ReviewsGrid() {
   const [helpfulVotes, setHelpfulVotes] = useState<Record<string, boolean>>({});
+  const [loadedPhotos, setLoadedPhotos] = useState<Record<string, boolean>>({});
+  const [failedPhotos, setFailedPhotos] = useState<Record<string, boolean>>({});
 
   const toggleHelpful = (id: string) => {
     setHelpfulVotes((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -63,7 +66,7 @@ export function ReviewsGrid() {
                 className="break-inside-avoid rounded-3xl bg-white border border-pine-900/15 overflow-hidden shadow-card-soft flex flex-col"
               >
                 {/* Photo / Video Style UGC Preview Header */}
-                <div className="relative h-44 bg-pine-950 overflow-hidden">
+                <div className="relative h-52 bg-pine-950 overflow-hidden">
                   <CottageVisual
                     scene={
                       isMantel
@@ -79,12 +82,46 @@ export function ReviewsGrid() {
                     intensity={index % 2 === 0 ? "steady" : "gentle"}
                   />
 
-                  <div className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-pine-950/80 backdrop-blur-md text-white px-2.5 py-1 text-[11px] font-bold">
-                    <Play className="w-3 h-3 fill-amberGlow-300 text-amberGlow-300" />
+                  {review.imageSrc && !failedPhotos[review.imageSrc] && (
+                    <img
+                      ref={(el) => {
+                        if (!el || !el.complete || !review.imageSrc) return;
+                        if (el.naturalWidth === 0 && !failedPhotos[review.imageSrc]) {
+                          setFailedPhotos((prev) => ({ ...prev, [review.imageSrc!]: true }));
+                        } else if (el.naturalWidth > 0 && !loadedPhotos[review.imageSrc]) {
+                          setLoadedPhotos((prev) => ({ ...prev, [review.imageSrc!]: true }));
+                        }
+                      }}
+                      src={review.imageSrc}
+                      alt={`${review.author} — ${review.sceneCaption}`}
+                      onLoad={() =>
+                        setLoadedPhotos((prev) =>
+                          prev[review.imageSrc!]
+                            ? prev
+                            : { ...prev, [review.imageSrc!]: true }
+                        )
+                      }
+                      onError={() =>
+                        setFailedPhotos((prev) =>
+                          prev[review.imageSrc!]
+                            ? prev
+                            : { ...prev, [review.imageSrc!]: true }
+                        )
+                      }
+                      className={`absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300 ${
+                        loadedPhotos[review.imageSrc]
+                          ? "opacity-100"
+                          : "opacity-0 pointer-events-none"
+                      }`}
+                    />
+                  )}
+
+                  <div className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-pine-950/85 backdrop-blur-md text-white px-2.5 py-1 text-[11px] font-bold">
+                    <Camera className="w-3 h-3 text-amberGlow-300" />
                     {SCENE_BADGE_MAP[review.sceneTone]}
                   </div>
 
-                  <div className="absolute bottom-3 left-3 right-3 z-20 rounded-xl bg-black/55 backdrop-blur-sm px-3 py-1.5 text-[11px] text-cream-100 font-medium">
+                  <div className="absolute bottom-3 left-3 right-3 z-20 rounded-xl bg-black/65 backdrop-blur-sm px-3 py-1.5 text-[11px] text-cream-100 font-medium">
                     &ldquo;{review.sceneCaption}&rdquo;
                   </div>
                 </div>

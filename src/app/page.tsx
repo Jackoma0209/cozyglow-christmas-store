@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { BundleTier, CurrencyCode } from "@/config/product";
+import {
+  BUNDLE_TIERS,
+  BundleTier,
+  CurrencyCode,
+  getBundlePricing,
+  getOrderBumpPrice,
+} from "@/config/product";
+import { trackAddToCart } from "@/lib/analytics";
 import { UrgencyTopBar } from "@/components/UrgencyTopBar";
 import { HeroProductBuyBox } from "@/components/HeroProductBuyBox";
 import { VisualDemoSection } from "@/components/VisualDemoSection";
@@ -26,13 +33,27 @@ export default function StorefrontPage() {
     (selectedBundleId === "single" ? 1 : selectedBundleId === "double" ? 2 : 3) +
     (includeOrderBump ? 1 : 0);
 
+  const openCheckoutWithTracking = () => {
+    const activeBundle =
+      BUNDLE_TIERS.find((b) => b.id === selectedBundleId) ?? BUNDLE_TIERS[1];
+    const bundlePricing = getBundlePricing(activeBundle, currency);
+    const bumpPricing = getOrderBumpPrice(currency);
+    trackAddToCart({
+      value: bundlePricing.price + (includeOrderBump ? bumpPricing.price : 0),
+      currency,
+      bundleId: selectedBundleId,
+      itemCount,
+    });
+    setIsCheckoutOpen(true);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-cream-50 text-pine-900">
       <UrgencyTopBar
         currency={currency}
         onCurrencyChange={setCurrency}
         cartCount={itemCount}
-        onOpenCart={() => setIsCheckoutOpen(true)}
+        onOpenCart={openCheckoutWithTracking}
       />
 
       <main className="flex-1">
@@ -42,7 +63,7 @@ export default function StorefrontPage() {
           onSelectBundle={setSelectedBundleId}
           includeOrderBump={includeOrderBump}
           onToggleOrderBump={setIncludeOrderBump}
-          onClaimNow={() => setIsCheckoutOpen(true)}
+          onClaimNow={openCheckoutWithTracking}
         />
 
         <VisualDemoSection />
@@ -55,7 +76,7 @@ export default function StorefrontPage() {
 
         <FaqSection
           currency={currency}
-          onClaimNow={() => setIsCheckoutOpen(true)}
+          onClaimNow={openCheckoutWithTracking}
         />
       </main>
 
@@ -66,7 +87,7 @@ export default function StorefrontPage() {
         selectedBundleId={selectedBundleId}
         onSelectBundle={setSelectedBundleId}
         includeOrderBump={includeOrderBump}
-        onClaimNow={() => setIsCheckoutOpen(true)}
+        onClaimNow={openCheckoutWithTracking}
       />
 
       <CheckoutDrawer

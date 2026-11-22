@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -21,9 +22,11 @@ import {
   formatMoney,
   getBundlePricing,
   getOrderBumpPrice,
+  getStandardShippingFee,
 } from "@/config/product";
 import { CottageVisual } from "./CottageVisual";
 import { cn } from "@/lib/utils";
+import { trackInitiateCheckout } from "@/lib/analytics";
 
 interface CheckoutDrawerProps {
   open: boolean;
@@ -49,6 +52,8 @@ export function CheckoutDrawer({
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [thumbLoaded, setThumbLoaded] = useState(false);
+  const [thumbFailed, setThumbFailed] = useState(false);
 
   if (!open) return null;
 
@@ -58,7 +63,7 @@ export function CheckoutDrawer({
   const bumpPricing = getOrderBumpPrice(currency);
   const currencyMeta = CURRENCIES[currency];
 
-  const shippingFee = activeBundle.freeShipping ? 0 : currency === "gbp" ? 4.95 : 6.95;
+  const shippingFee = getStandardShippingFee(activeBundle, currency);
   const subtotal =
     bundlePricing.price + (includeOrderBump ? bumpPricing.price : 0);
   const total = subtotal + shippingFee;
@@ -70,6 +75,12 @@ export function CheckoutDrawer({
   const handleCheckout = async () => {
     setSubmitting(true);
     setErrorMsg(null);
+    trackInitiateCheckout({
+      value: total,
+      currency,
+      bundleId: selectedBundleId,
+      itemCount: activeBundle.quantity + (includeOrderBump ? 1 : 0),
+    });
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
@@ -187,8 +198,25 @@ export function CheckoutDrawer({
           {/* Selected Item Card */}
           <div className="rounded-2xl bg-white border border-pine-900/15 p-4 space-y-3 shadow-sm">
             <div className="flex items-start gap-3.5">
-              <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-pine-900/10">
+              <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-pine-900/10 bg-pine-950">
                 <CottageVisual scene="chimney" mistActive glowActive />
+                {!thumbFailed && (
+                  <img
+                    ref={(el) => {
+                      if (!el || !el.complete) return;
+                      if (el.naturalWidth === 0 && !thumbFailed) setThumbFailed(true);
+                      else if (el.naturalWidth > 0 && !thumbLoaded) setThumbLoaded(true);
+                    }}
+                    src="/images/products/01-chimney-mist-hero.jpg"
+                    alt={activeBundle.name}
+                    onLoad={() => setThumbLoaded(true)}
+                    onError={() => setThumbFailed(true)}
+                    className={cn(
+                      "absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300",
+                      thumbLoaded ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}
+                  />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm text-pine-950 leading-snug">

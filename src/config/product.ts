@@ -94,6 +94,7 @@ export interface ReviewItem {
   bundleBought: string;
   sceneCaption: string;
   sceneTone: "mantel" | "bedside" | "secret-santa" | "dining" | "nursery" | "office";
+  imageSrc?: string;
   helpfulCount: number;
   dateLabel: string;
 }
@@ -166,6 +167,15 @@ export const STRIPE_PRICE_IDS: Record<
   },
 };
 
+export const SHIPPING_CONFIG = {
+  standardGbp: 4.95,
+  standardUsd: 6.95,
+  priorityUpgradeGbp: 4.95,
+  priorityUpgradeUsd: 4.95,
+  singlePriorityGbp: 7.95,
+  singlePriorityUsd: 9.95,
+} as const;
+
 export const PRODUCT_CONFIG = {
   brandName: "CozyGlow™",
   productTitle:
@@ -197,7 +207,8 @@ export const PRODUCT_CONFIG = {
     safety: "Cool Mist • Zero Flame • Auto Shut-Off",
   },
   guaranteeDays: 30,
-  supportEmail: "concierge@cozyglowhome.com",
+  supportEmail:
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "concierge@cozyglowhome.com",
 };
 
 export const BUNDLE_TIERS: BundleTier[] = [
@@ -303,7 +314,6 @@ export const GALLERY_SLIDES: GallerySlide[] = [
     badge: "Live Steam Effect",
     scene: "chimney",
     imageSrc: "/images/products/01-chimney-mist-hero.jpg",
-    videoSrc: "/images/products/chimney-mist-loop.mp4",
   },
   {
     id: "night-glow",
@@ -443,6 +453,7 @@ export const REVIEWS: ReviewItem[] = [
     bundleBought: "2x Cottage Bundle",
     sceneCaption: "Flickering next to our garland & stockings",
     sceneTone: "mantel",
+    imageSrc: "/images/products/01-chimney-mist-hero.jpg",
     helpfulCount: 94,
     dateLabel: "2 days ago",
   },
@@ -457,6 +468,7 @@ export const REVIEWS: ReviewItem[] = [
     bundleBought: "2x Cottage Bundle",
     sceneCaption: "Unboxed at our holiday gift swap",
     sceneTone: "secret-santa",
+    imageSrc: "/images/products/05-gift-box-unboxing.jpg",
     helpfulCount: 78,
     dateLabel: "4 days ago",
   },
@@ -471,6 +483,7 @@ export const REVIEWS: ReviewItem[] = [
     bundleBought: "3x Winter Village Bundle",
     sceneCaption: "Running quietly on our oak console table",
     sceneTone: "nursery",
+    imageSrc: "/images/products/review-scale-hands.jpg",
     helpfulCount: 61,
     dateLabel: "5 days ago",
   },
@@ -485,6 +498,7 @@ export const REVIEWS: ReviewItem[] = [
     bundleBought: "3x Winter Village Bundle",
     sceneCaption: "Three cottages puffing together at dinner",
     sceneTone: "dining",
+    imageSrc: "/images/products/04-mantel-village-setup.jpg",
     helpfulCount: 53,
     dateLabel: "1 week ago",
   },
@@ -499,6 +513,7 @@ export const REVIEWS: ReviewItem[] = [
     bundleBought: "1x Single Unit + Oil Trio",
     sceneCaption: "Bedside nightlight + eucalyptus mist",
     sceneTone: "bedside",
+    imageSrc: "/images/products/02-warm-window-glow.jpg",
     helpfulCount: 47,
     dateLabel: "1 week ago",
   },
@@ -513,6 +528,7 @@ export const REVIEWS: ReviewItem[] = [
     bundleBought: "2x Cottage Bundle",
     sceneCaption: "Desk setup for winter WFH mornings",
     sceneTone: "office",
+    imageSrc: "/images/products/review-kitchen-counter.jpg",
     helpfulCount: 39,
     dateLabel: "2 weeks ago",
   },
@@ -612,4 +628,23 @@ export function getOrderBumpPrice(currency: CurrencyCode): {
     compareAt:
       currency === "gbp" ? ORDER_BUMP.compareAtGbp : ORDER_BUMP.compareAtUsd,
   };
+}
+
+export function getStandardShippingFee(
+  bundle: BundleTier,
+  currency: CurrencyCode
+): number {
+  if (bundle.freeShipping) return 0;
+  return currency === "gbp"
+    ? SHIPPING_CONFIG.standardGbp
+    : SHIPPING_CONFIG.standardUsd;
+}
+
+export function getOrderReferenceFromSessionId(
+  sessionId?: string | null
+): string {
+  if (sessionId && sessionId.length > 6) {
+    return `#CG-${sessionId.slice(-5).toUpperCase()}`;
+  }
+  return "#CG-84920";
 }
