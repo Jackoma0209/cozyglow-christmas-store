@@ -1,6 +1,7 @@
 "use client";
 
 import { CurrencyCode } from "@/config/product";
+import { readCookieConsent } from "@/lib/consent";
 
 declare global {
   interface Window {
@@ -19,7 +20,9 @@ export function trackAddToCart(params: {
   bundleId: string;
   itemCount: number;
 }): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || readCookieConsent() !== "accepted") {
+    return;
+  }
   const isoCurrency = params.currency.toUpperCase();
 
   try {
@@ -63,7 +66,9 @@ export function trackInitiateCheckout(params: {
   bundleId: string;
   itemCount: number;
 }): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || readCookieConsent() !== "accepted") {
+    return;
+  }
   const isoCurrency = params.currency.toUpperCase();
 
   try {
@@ -107,7 +112,9 @@ export function trackPurchase(params: {
   currency: CurrencyCode;
   bundleId: string;
 }): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || readCookieConsent() !== "accepted") {
+    return;
+  }
   const dedupeKey = `cg_purchase_tracked_${params.orderId}`;
 
   try {
@@ -150,6 +157,39 @@ export function trackPurchase(params: {
       currency: isoCurrency,
       value: params.value,
       items: [{ item_id: params.bundleId, quantity: 1 }],
+    });
+  } catch {
+    // ignore pixel errors
+  }
+}
+
+export function trackLead(params: { source: string }): void {
+  if (typeof window === "undefined" || readCookieConsent() !== "accepted") {
+    return;
+  }
+
+  try {
+    window.fbq?.("track", "Lead", {
+      content_name: "newsletter_signup",
+      lead_event_source: params.source,
+    });
+  } catch {
+    // ignore pixel errors
+  }
+
+  try {
+    window.ttq?.track("SubmitForm", {
+      content_name: "newsletter_signup",
+      description: params.source,
+    });
+  } catch {
+    // ignore pixel errors
+  }
+
+  try {
+    window.gtag?.("event", "generate_lead", {
+      event_category: "newsletter",
+      event_label: params.source,
     });
   } catch {
     // ignore pixel errors

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { AnalyticsPixels } from "@/components/AnalyticsPixels";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,7 +17,7 @@ const playfair = Playfair_Display({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://cozyglow-christmas-store.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://cozyglowhome.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -54,9 +55,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="min-h-screen font-sans antialiased bg-cream-50 text-pine-900 selection:bg-amberGlow-300/40 selection:text-pine-950">
+      <body className="min-h-screen overflow-x-clip font-sans antialiased bg-cream-50 text-pine-900 selection:bg-amberGlow-300/40 selection:text-pine-950">
         {children}
         <AnalyticsPixels />
+        <CookieConsentBanner />
       </body>
     </html>
   );

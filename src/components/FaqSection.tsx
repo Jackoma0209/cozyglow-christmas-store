@@ -44,10 +44,12 @@ export function FaqSection({ currency, onClaimNow }: FaqSectionProps) {
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : idx)}
                   aria-expanded={isOpen}
+                  aria-controls={`faq-panel-${idx}`}
                   className="w-full flex items-center justify-between gap-4 p-5 text-left font-bold text-pine-950 hover:bg-cream-100/70 transition-colors"
                 >
                   <span className="text-sm sm:text-base">{faq.question}</span>
                   <ChevronDown
+                    aria-hidden="true"
                     className={cn(
                       "w-5 h-5 text-pine-800 shrink-0 transition-transform duration-200",
                       isOpen && "rotate-180"
@@ -55,7 +57,10 @@ export function FaqSection({ currency, onClaimNow }: FaqSectionProps) {
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-5 text-sm text-pine-800 leading-relaxed border-t border-pine-900/10 pt-3.5 bg-white">
+                  <div
+                    id={`faq-panel-${idx}`}
+                    className="px-5 pb-5 text-sm text-pine-800 leading-relaxed border-t border-pine-900/10 pt-3.5 bg-white"
+                  >
                     {faq.answer}
                   </div>
                 )}
@@ -68,7 +73,7 @@ export function FaqSection({ currency, onClaimNow }: FaqSectionProps) {
         <div className="rounded-3xl bg-gradient-to-br from-pine-900 via-pine-950 to-[#0B1914] text-cream-50 p-6 sm:p-10 border border-amberGlow-400/35 shadow-card-soft flex flex-col lg:flex-row items-center justify-between gap-6">
           <div className="flex items-start gap-4 max-w-2xl">
             <div className="w-14 h-14 rounded-2xl bg-amberGlow-400/15 border border-amberGlow-400/40 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-8 h-8 text-amberGlow-300" />
+              <ShieldCheck className="w-8 h-8 text-amberGlow-300" aria-hidden="true" />
             </div>
             <div className="space-y-1.5">
               <h3 className="font-serif text-2xl font-bold text-white">
@@ -90,9 +95,9 @@ export function FaqSection({ currency, onClaimNow }: FaqSectionProps) {
             onClick={onClaimNow}
             className="w-full lg:w-auto shrink-0 rounded-2xl bg-crimson-700 hover:bg-crimson-600 text-white font-bold px-7 py-4 text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-4 h-4 text-amberGlow-300" />
+            <Sparkles className="w-4 h-4 text-amberGlow-300" aria-hidden="true" />
             <span>Claim My CozyGlow™ Now</span>
-            <Truck className="w-4 h-4 text-amberGlow-300" />
+            <Truck className="w-4 h-4 text-amberGlow-300" aria-hidden="true" />
           </button>
         </div>
       </div>

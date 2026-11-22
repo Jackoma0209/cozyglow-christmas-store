@@ -49,16 +49,16 @@ export function StickyBuyBar({
     <div className="fixed bottom-0 inset-x-0 z-40 bg-pine-950/95 backdrop-blur-md border-t border-amberGlow-400/30 text-cream-50 shadow-[0_-10px_30px_rgba(0,0,0,0.3)] px-3 sm:px-6 py-3">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
         {/* Product & Instant Bundle Selector */}
-        <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <div className="w-9 h-9 rounded-xl bg-amberGlow-400/15 border border-amberGlow-400/40 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 text-amberGlow-300" />
+              <Sparkles className="w-4 h-4 text-amberGlow-300" aria-hidden="true" />
             </div>
-            <div>
-              <p className="font-serif font-bold text-sm text-white leading-tight">
+            <div className="min-w-0">
+              <p className="font-serif font-bold text-sm text-white leading-tight truncate">
                 CozyGlow™ Christmas Cottage
               </p>
-              <p className="text-[11px] text-amberGlow-300 font-semibold">
+              <p className="text-[11px] text-amberGlow-300 font-semibold truncate">
                 {activeBundle.shortLabel}
                 {includeOrderBump ? " + Breakage Protection" : ""}
               </p>
@@ -71,7 +71,7 @@ export function StickyBuyBar({
             onChange={(e) =>
               onSelectBundle(e.target.value as BundleTier["id"])
             }
-            className="rounded-xl bg-pine-900 border border-white/20 text-xs font-bold text-cream-50 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-amberGlow-400"
+            className="w-[136px] sm:w-auto max-w-full shrink-0 rounded-xl bg-pine-900 border border-white/20 text-xs font-bold text-cream-50 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-amberGlow-400"
           >
             {BUNDLE_TIERS.map((tier) => {
               const p = getBundlePricing(tier, currency);
@@ -90,7 +90,7 @@ export function StickyBuyBar({
           onClick={onClaimNow}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-crimson-700 hover:bg-crimson-600 text-white font-bold text-sm px-6 py-3 shadow-lg transition-all shrink-0"
         >
-          <Lock className="w-3.5 h-3.5 text-amberGlow-300" />
+          <Lock className="w-3.5 h-3.5 text-amberGlow-300" aria-hidden="true" />
           <span>
             Express Checkout — {formatMoney(total, currency)}
           </span>

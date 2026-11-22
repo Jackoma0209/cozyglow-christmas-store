@@ -1,80 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import Link from "next/link";
 import { X, ShieldCheck } from "lucide-react";
+import { POLICY_DOCUMENTS, PolicyKey } from "@/config/policies";
 import { PRODUCT_CONFIG } from "@/config/product";
 
-export type PolicyType = "privacy" | "terms" | "returns" | null;
+export type PolicyType = PolicyKey | null;
 
 interface PolicyModalsProps {
   activePolicy: PolicyType;
   onClose: () => void;
 }
 
-const POLICY_CONTENT: Record<
-  Exclude<PolicyType, null>,
-  { title: string; updated: string; sections: { heading: string; text: string }[] }
-> = {
-  privacy: {
-    title: "Privacy Policy",
-    updated: "November 2026",
-    sections: [
-      {
-        heading: "1. Information We Collect",
-        text: `When you browse or place an order with ${PRODUCT_CONFIG.brandName}, we collect only the details needed to fulfill your holiday delivery: name, shipping address, email address, phone number for courier SMS alerts, and encrypted payment confirmation processed by Stripe.`,
-      },
-      {
-        heading: "2. Payment Security",
-        text: "We never store raw card numbers on our servers. All transactions are processed over PCI-DSS Level 1 compliant TLS encryption via Stripe Checkout, Apple Pay, Link, and Klarna.",
-      },
-      {
-        heading: "3. Cookies & Preferences",
-        text: "Essential session storage remembers your selected bundle tier, currency preference (GBP or USD), and cart items. For privacy requests, contact our compliance desk at " + PRODUCT_CONFIG.supportEmail + ".",
-      },
-    ],
-  },
-  terms: {
-    title: "Terms of Service",
-    updated: "November 2026",
-    sections: [
-      {
-        heading: "1. Seasonal Dispatch & Fulfillment",
-        text: "Orders ship with full online tracking and typically arrive in 8–12 business days via Royal Mail / Evri Tracked (UK) or USPS / Tracked Holiday Courier (US).",
-      },
-      {
-        heading: "2. Product Usage & Safety",
-        text: "CozyGlow™ Nordic Christmas Cottage Diffusers are cordless and require 3× AAA batteries (not included), operated with clean water and optional water-soluble essential oils. Always place on a flat, stable surface.",
-      },
-      {
-        heading: "3. Pricing & Bundles",
-        text: "Promotional bundle savings (up to 56% off) apply automatically while current holiday batch inventory lasts.",
-      },
-    ],
-  },
-  returns: {
-    title: "Returns & 30-Day Money-Back Guarantee",
-    updated: "November 2026",
-    sections: [
-      {
-        heading: "1. 30-Day Holiday Trial",
-        text: "If your CozyGlow™ Cottage doesn't transform your winter evenings, you have 30 full calendar days from the delivery date to request a return or free replacement.",
-      },
-      {
-        heading: "2. Damaged or Defective Arrivals",
-        text: `Should a unit arrive damaged in transit, email a quick photo and your #CG order reference to ${PRODUCT_CONFIG.supportEmail}. We dispatch a brand-new replacement immediately at zero cost to you.`,
-      },
-      {
-        heading: "3. Fast Refund Turnaround",
-        text: "Approved refunds are credited back to your original payment method (card, Apple Pay, Link, or Klarna) within 3–5 business days.",
-      },
-    ],
-  },
-};
-
 export function PolicyModals({ activePolicy, onClose }: PolicyModalsProps) {
+  useEffect(() => {
+    if (!activePolicy) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activePolicy, onClose]);
+
   if (!activePolicy) return null;
 
-  const doc = POLICY_CONTENT[activePolicy];
+  const doc = POLICY_DOCUMENTS[activePolicy];
 
   return (
     <div
@@ -82,11 +42,15 @@ export function PolicyModals({ activePolicy, onClose }: PolicyModalsProps) {
       role="dialog"
       aria-modal="true"
       aria-label={doc.title}
+      onClick={onClose}
     >
-      <div className="w-full max-w-xl rounded-3xl bg-cream-50 border border-pine-900/15 shadow-2xl overflow-hidden">
+      <div
+        className="w-full max-w-xl rounded-3xl bg-cream-50 border border-pine-900/15 shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-5 bg-pine-950 text-cream-50 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-amberGlow-300" />
+            <ShieldCheck className="w-5 h-5 text-amberGlow-300" aria-hidden="true" />
             <div>
               <h2 className="font-serif text-lg font-bold leading-tight">
                 {doc.title}
@@ -103,7 +67,7 @@ export function PolicyModals({ activePolicy, onClose }: PolicyModalsProps) {
             aria-label="Close modal"
             className="p-2 rounded-full hover:bg-white/10 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -120,7 +84,14 @@ export function PolicyModals({ activePolicy, onClose }: PolicyModalsProps) {
           ))}
         </div>
 
-        <div className="p-4 bg-white border-t border-pine-900/10 flex justify-end">
+        <div className="p-4 bg-white border-t border-pine-900/10 flex items-center justify-between gap-3">
+          <Link
+            href={doc.slug}
+            onClick={onClose}
+            className="text-xs font-semibold text-pine-700 hover:text-crimson-700 underline underline-offset-2 transition-colors"
+          >
+            Open full page
+          </Link>
           <button
             type="button"
             onClick={onClose}

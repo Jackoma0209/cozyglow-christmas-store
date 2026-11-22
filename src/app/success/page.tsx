@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -60,7 +60,6 @@ function SuccessContent() {
   const [demoUpsellClaimed, setDemoUpsellClaimed] = useState(false);
   const [upsellLoading, setUpsellLoading] = useState(false);
   const [upsellError, setUpsellError] = useState<string | null>(null);
-  const [upsellThumbLoaded, setUpsellThumbLoaded] = useState(false);
   const [upsellThumbFailed, setUpsellThumbFailed] = useState(false);
 
   const isDemo = searchParams.get("demo") === "true";
@@ -417,26 +416,15 @@ function SuccessContent() {
         <div className="rounded-3xl bg-gradient-to-br from-pine-900 via-pine-950 to-[#0B1914] text-cream-50 border-2 border-amberGlow-400/60 p-6 sm:p-8 shadow-warm-glow">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             <div className="relative md:col-span-4 aspect-square rounded-2xl overflow-hidden border border-white/15 bg-pine-950">
-              <CottageVisual scene="mantel" mistActive glowActive />
+              <CottageVisual scene="mantel" mistActive glowActive decorative />
               {!upsellThumbFailed && (
-                <img
-                  ref={(el) => {
-                    if (!el || !el.complete) return;
-                    if (el.naturalWidth === 0 && !upsellThumbFailed) {
-                      setUpsellThumbFailed(true);
-                    } else if (el.naturalWidth > 0 && !upsellThumbLoaded) {
-                      setUpsellThumbLoaded(true);
-                    }
-                  }}
+                <Image
                   src="/images/products/04-mantel-village-setup.jpg"
                   alt="CozyGlow™ Mantel Village Add-On"
-                  onLoad={() => setUpsellThumbLoaded(true)}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 240px"
                   onError={() => setUpsellThumbFailed(true)}
-                  className={`absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300 ${
-                    upsellThumbLoaded
-                      ? "opacity-100"
-                      : "opacity-0 pointer-events-none"
-                  }`}
+                  className="z-10 object-cover"
                 />
               )}
             </div>

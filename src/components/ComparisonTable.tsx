@@ -10,7 +10,7 @@ export function ComparisonTable() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="max-w-3xl mx-auto text-center space-y-3">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-cream-200 text-pine-900 px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-crimson-700" />
+            <Sparkles className="w-3.5 h-3.5 text-crimson-700" aria-hidden="true" />
             Why Families Upgrade From Candles
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-pine-950">
@@ -31,7 +31,7 @@ export function ComparisonTable() {
                 <th className="p-5 bg-pine-900 text-cream-50 w-[28%]">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amberGlow-400 text-pine-950">
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                     </span>
                     <div>
                       <p className="font-serif text-base font-bold leading-tight">
@@ -45,7 +45,7 @@ export function ComparisonTable() {
                 </th>
                 <th className="p-5 text-sm font-bold text-pine-900 w-[23%]">
                   <span className="inline-flex items-center gap-1.5">
-                    <Flame className="w-4 h-4 text-crimson-600" />
+                    <Flame className="w-4 h-4 text-crimson-600" aria-hidden="true" />
                     Generic Candles
                   </span>
                 </th>
@@ -60,7 +60,10 @@ export function ComparisonTable() {
                   <td className="p-5 font-bold text-pine-950">{row.feature}</td>
                   <td className="p-5 bg-pine-900/[0.04] border-x border-pine-900/10 font-semibold text-pine-950">
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0"
+                      >
                         <Check className="w-3 h-3 stroke-[3]" />
                       </span>
                       <span>{row.cozyGlow}</span>
@@ -68,7 +71,10 @@ export function ComparisonTable() {
                   </td>
                   <td className="p-5 text-pine-700">
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 w-5 h-5 rounded-full bg-red-100 text-crimson-700 flex items-center justify-center shrink-0">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 w-5 h-5 rounded-full bg-red-100 text-crimson-700 flex items-center justify-center shrink-0"
+                      >
                         <X className="w-3 h-3 stroke-[3]" />
                       </span>
                       <span>{row.candles}</span>
@@ -76,7 +82,10 @@ export function ComparisonTable() {
                   </td>
                   <td className="p-5 text-pine-700">
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0"
+                      >
                         <X className="w-3 h-3 stroke-[3]" />
                       </span>
                       <span>{row.plainHumidifier}</span>
@@ -87,6 +96,10 @@ export function ComparisonTable() {
             </tbody>
           </table>
         </div>
+
+        <p className="text-xs text-pine-700 text-center md:hidden">
+          Swipe table left or right to compare all features &rarr;
+        </p>
       </div>
     </section>
   );

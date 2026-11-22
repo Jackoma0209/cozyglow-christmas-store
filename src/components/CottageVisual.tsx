@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface CottageVisualProps {
@@ -10,6 +10,7 @@ interface CottageVisualProps {
   windowColor?: string;
   accentHex?: string;
   intensity?: "gentle" | "steady" | "boost";
+  decorative?: boolean;
   className?: string;
 }
 
@@ -20,8 +21,15 @@ export function CottageVisual({
   windowColor = "#FBBF24",
   accentHex = "#F59E0B",
   intensity = "steady",
+  decorative = false,
   className,
 }: CottageVisualProps) {
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const snowRoofGradId = `cg-${uid}-snowRoofGrad`;
+  const timberWallGradId = `cg-${uid}-timberWallGrad`;
+  const cutawayWaterGradId = `cg-${uid}-cutawayWaterGrad`;
+  const warmGlowFilterId = `cg-${uid}-warmGlowFilter`;
+
   const isNight = scene === "night" || scene === "chimney";
   const isCutaway = scene === "cutaway";
   const isMantel = scene === "mantel";
@@ -107,7 +115,10 @@ export function CottageVisual({
 
       {/* Scene-specific SVG / CSS Artwork */}
       {isGiftbox ? (
-        <div className="relative z-10 flex flex-col items-center justify-center p-6">
+        <div
+          aria-hidden={decorative || undefined}
+          className="relative z-10 flex flex-col items-center justify-center p-6"
+        >
           {/* Keepsake Gift Box Visual */}
           <div className="relative w-64 h-56 flex flex-col items-center justify-end">
             {/* Lid hovering slightly */}
@@ -139,24 +150,29 @@ export function CottageVisual({
         <svg
           viewBox="0 0 420 320"
           className="relative z-10 w-full max-w-[390px] h-auto drop-shadow-[0_24px_30px_rgba(0,0,0,0.55)]"
-          role="img"
-          aria-label="CozyGlow Nordic Christmas Cottage Diffuser illustration"
+          {...(decorative
+            ? { "aria-hidden": true }
+            : {
+                role: "img",
+                "aria-label":
+                  "CozyGlow Nordic Christmas Cottage Diffuser illustration",
+              })}
         >
           <defs>
-            <linearGradient id="snowRoofGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={snowRoofGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#FFFFFF" />
               <stop offset="65%" stopColor="#F1F5F9" />
               <stop offset="100%" stopColor="#CBD5E1" />
             </linearGradient>
-            <linearGradient id="timberWallGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={timberWallGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#FBF6EC" />
               <stop offset="100%" stopColor="#E6D8C3" />
             </linearGradient>
-            <linearGradient id="cutawayWaterGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={cutawayWaterGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#7DD3FC" stopOpacity="0.7" />
               <stop offset="100%" stopColor="#0284C7" stopOpacity="0.85" />
             </linearGradient>
-            <filter id="warmGlowFilter" x="-40%" y="-40%" width="180%" height="180%">
+            <filter id={warmGlowFilterId} x="-40%" y="-40%" width="180%" height="180%">
               <feGaussianBlur stdDeviation="6" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
@@ -235,7 +251,7 @@ export function CottageVisual({
             width="192"
             height="126"
             rx="10"
-            fill="url(#timberWallGrad)"
+            fill={`url(#${timberWallGradId})`}
             stroke="#C7B299"
             strokeWidth="2"
           />
@@ -266,7 +282,7 @@ export function CottageVisual({
                 width="156"
                 height="58"
                 rx="6"
-                fill="url(#cutawayWaterGrad)"
+                fill={`url(#${cutawayWaterGradId})`}
               />
               {/* Ultrasonic Mist Disc */}
               <ellipse cx="210" cy="246" rx="22" ry="5" fill="#E0F2FE" />
@@ -314,7 +330,7 @@ export function CottageVisual({
                   fill={glowActive ? windowColor : "#475569"}
                   stroke="#5C2D16"
                   strokeWidth="4"
-                  filter={glowActive ? "url(#warmGlowFilter)" : undefined}
+                  filter={glowActive ? `url(#${warmGlowFilterId})` : undefined}
                 />
                 <line x1="157" y1="176" x2="157" y2="228" stroke="#5C2D16" strokeWidth="3" />
                 <line x1="134" y1="202" x2="180" y2="202" stroke="#5C2D16" strokeWidth="3" />
@@ -354,7 +370,7 @@ export function CottageVisual({
                   fill={glowActive ? windowColor : "#475569"}
                   stroke="#5C2D16"
                   strokeWidth="4"
-                  filter={glowActive ? "url(#warmGlowFilter)" : undefined}
+                  filter={glowActive ? `url(#${warmGlowFilterId})` : undefined}
                 />
                 <line x1="263" y1="176" x2="263" y2="228" stroke="#5C2D16" strokeWidth="3" />
                 <line x1="240" y1="202" x2="286" y2="202" stroke="#5C2D16" strokeWidth="3" />
@@ -369,7 +385,7 @@ export function CottageVisual({
             {/* Snowy Roof Blanket */}
             <path
               d="M84,154 L210,56 L336,154 C336,162 323,166 312,158 C302,165 289,163 279,156 L210,100 L141,156 C131,163 118,165 108,158 C97,166 84,162 84,154 Z"
-              fill="url(#snowRoofGrad)"
+              fill={`url(#${snowRoofGradId})`}
             />
             {/* Attic circular window */}
             <circle

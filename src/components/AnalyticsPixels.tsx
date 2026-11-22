@@ -1,14 +1,42 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Script from "next/script";
+import {
+  COOKIE_CONSENT_CHANGE_EVENT,
+  COOKIE_CONSENT_STORAGE_KEY,
+  readCookieConsent,
+} from "@/lib/consent";
 
 export function AnalyticsPixels() {
+  const [hasConsent, setHasConsent] = useState(false);
+
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
   const tiktokPixelId = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID?.trim();
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 
-  if (!metaPixelId && !tiktokPixelId && !gaId) {
+  useEffect(() => {
+    const syncConsent = () => {
+      setHasConsent(readCookieConsent() === "accepted");
+    };
+
+    syncConsent();
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === COOKIE_CONSENT_STORAGE_KEY) {
+        syncConsent();
+      }
+    };
+
+    window.addEventListener(COOKIE_CONSENT_CHANGE_EVENT, syncConsent);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(COOKIE_CONSENT_CHANGE_EVENT, syncConsent);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  if (!hasConsent || (!metaPixelId && !tiktokPixelId && !gaId)) {
     return null;
   }
 

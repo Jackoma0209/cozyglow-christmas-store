@@ -94,3 +94,14 @@
 .animate-subtle-float {
   animation: subtleFloat 3.6s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-chimney-steam-1,
+  .animate-chimney-steam-2,
+  .animate-chimney-steam-3,
+  .animate-window-glow,
+  .animate-snowfall,
+  .animate-subtle-float {
+    animation: none !important;
+  }
+}

@@ -31,7 +31,7 @@ export function AmbianceConfigurator() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="max-w-3xl mx-auto text-center space-y-3">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-pine-900 text-amberGlow-300 px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
             Interactive Scent &amp; Ambiance Explorer
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-pine-950">
@@ -104,6 +104,7 @@ export function AmbianceConfigurator() {
                     <button
                       key={mode.id}
                       type="button"
+                      aria-pressed={isActive}
                       onClick={() => setSelectedModeId(mode.id)}
                       className={cn(
                         "rounded-2xl border-2 p-3.5 text-left transition-all",
@@ -113,6 +114,7 @@ export function AmbianceConfigurator() {
                       )}
                     >
                       <Icon
+                        aria-hidden="true"
                         className={cn(
                           "w-5 h-5 mb-2",
                           isActive ? "text-crimson-700" : "text-pine-700"
@@ -136,7 +138,7 @@ export function AmbianceConfigurator() {
 
             {/* Step 2: 6 Holiday Scents */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs font-bold uppercase tracking-wider text-pine-800">
                   2. Pair With Collector Holiday Scents
                 </p>
@@ -152,6 +154,7 @@ export function AmbianceConfigurator() {
                     <button
                       key={scent.id}
                       type="button"
+                      aria-pressed={active}
                       onClick={() => setSelectedScentId(scent.id)}
                       className={cn(
                         "rounded-2xl border p-3 text-left transition-all",
@@ -162,6 +165,7 @@ export function AmbianceConfigurator() {
                     >
                       <div className="flex items-center gap-2">
                         <span
+                          aria-hidden="true"
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: scent.accentHex }}
                         />

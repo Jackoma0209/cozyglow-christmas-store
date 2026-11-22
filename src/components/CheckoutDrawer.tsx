@@ -1,14 +1,13 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Check,
   Gift,
   Loader2,
   Lock,
-  ShieldCheck,
   Sparkles,
   Truck,
   X,
@@ -19,12 +18,14 @@ import {
   CURRENCIES,
   CurrencyCode,
   ORDER_BUMP,
+  PRODUCT_CONFIG,
   formatMoney,
   getBundlePricing,
   getOrderBumpPrice,
   getStandardShippingFee,
 } from "@/config/product";
 import { CottageVisual } from "./CottageVisual";
+import { TrustBadges } from "./TrustBadges";
 import { cn } from "@/lib/utils";
 import { trackInitiateCheckout } from "@/lib/analytics";
 
@@ -52,8 +53,25 @@ export function CheckoutDrawer({
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [thumbLoaded, setThumbLoaded] = useState(false);
   const [thumbFailed, setThumbFailed] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -119,12 +137,16 @@ export function CheckoutDrawer({
       role="dialog"
       aria-modal="true"
       aria-label="CozyGlow Checkout Bag"
+      onClick={onClose}
     >
-      <div className="w-full max-w-md bg-cream-50 h-full shadow-2xl flex flex-col justify-between overflow-hidden">
+      <div
+        className="w-full max-w-md bg-cream-50 h-full shadow-2xl flex flex-col justify-between overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Drawer Header */}
-        <div className="p-5 bg-pine-950 text-cream-50 flex items-center justify-between border-b border-white/10">
+        <div className="p-4 sm:p-5 bg-pine-950 text-cream-50 flex items-center justify-between border-b border-white/10">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amberGlow-300" />
+            <Sparkles className="w-5 h-5 text-amberGlow-300 shrink-0" aria-hidden="true" />
             <div>
               <h2 className="font-serif text-lg font-bold leading-none">
                 Your Holiday Express Bag
@@ -141,16 +163,16 @@ export function CheckoutDrawer({
             aria-label="Close checkout drawer"
             className="p-2 rounded-full hover:bg-white/10 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
           {/* Express Shipping Progress Bar */}
           <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
-              <Truck className="w-4 h-4 text-emerald-700 shrink-0" />
+              <Truck className="w-4 h-4 text-emerald-700 shrink-0" aria-hidden="true" />
               {activeBundle.freeShipping ? (
                 <span>
                   Unlocked! FREE Tracked Express Holiday Shipping Included
@@ -176,11 +198,17 @@ export function CheckoutDrawer({
           {/* Currency Switch Inside Drawer */}
           <div className="flex items-center justify-between text-xs font-semibold text-pine-800">
             <span>Checkout Currency:</span>
-            <div className="inline-flex rounded-full bg-cream-200 p-0.5 border border-pine-900/10">
+            <div
+              role="group"
+              aria-label="Checkout currency"
+              className="inline-flex rounded-full bg-cream-200 p-0.5 border border-pine-900/10"
+            >
               {(["gbp", "usd"] as CurrencyCode[]).map((code) => (
                 <button
                   key={code}
                   type="button"
+                  aria-pressed={currency === code}
+                  aria-label={`Use ${CURRENCIES[code].label}`}
                   onClick={() => onCurrencyChange(code)}
                   className={cn(
                     "px-2.5 py-1 rounded-full text-xs font-bold transition-all",
@@ -189,7 +217,8 @@ export function CheckoutDrawer({
                       : "text-pine-800"
                   )}
                 >
-                  {CURRENCIES[code].flag} {code.toUpperCase()}
+                  <span aria-hidden="true">{CURRENCIES[code].flag} </span>
+                  {code.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -199,22 +228,15 @@ export function CheckoutDrawer({
           <div className="rounded-2xl bg-white border border-pine-900/15 p-4 space-y-3 shadow-sm">
             <div className="flex items-start gap-3.5">
               <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-pine-900/10 bg-pine-950">
-                <CottageVisual scene="chimney" mistActive glowActive />
+                <CottageVisual scene="chimney" mistActive glowActive decorative />
                 {!thumbFailed && (
-                  <img
-                    ref={(el) => {
-                      if (!el || !el.complete) return;
-                      if (el.naturalWidth === 0 && !thumbFailed) setThumbFailed(true);
-                      else if (el.naturalWidth > 0 && !thumbLoaded) setThumbLoaded(true);
-                    }}
+                  <Image
                     src="/images/products/01-chimney-mist-hero.jpg"
                     alt={activeBundle.name}
-                    onLoad={() => setThumbLoaded(true)}
+                    fill
+                    sizes="80px"
                     onError={() => setThumbFailed(true)}
-                    className={cn(
-                      "absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-300",
-                      thumbLoaded ? "opacity-100" : "opacity-0 pointer-events-none"
-                    )}
+                    className="z-10 object-cover"
                   />
                 )}
               </div>
@@ -239,14 +261,22 @@ export function CheckoutDrawer({
 
             {/* Quick Tier Switcher inside Drawer */}
             <div className="pt-2 border-t border-pine-900/10">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-pine-700 mb-1.5">
+              <p
+                id="drawer-bundle-label"
+                className="block text-[11px] font-bold uppercase tracking-wider text-pine-700 mb-1.5"
+              >
                 Switch Bundle Savings:
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              </p>
+              <div
+                role="group"
+                aria-labelledby="drawer-bundle-label"
+                className="grid grid-cols-3 gap-1.5"
+              >
                 {BUNDLE_TIERS.map((tier) => (
                   <button
                     key={tier.id}
                     type="button"
+                    aria-pressed={tier.id === selectedBundleId}
                     onClick={() => onSelectBundle(tier.id)}
                     className={cn(
                       "rounded-xl py-2 px-1.5 text-[11px] font-bold border text-center transition-all",
@@ -267,6 +297,7 @@ export function CheckoutDrawer({
             onClick={() => onToggleOrderBump(!includeOrderBump)}
             role="checkbox"
             aria-checked={includeOrderBump}
+            aria-label={`Add ${ORDER_BUMP.title}`}
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === " " || e.key === "Enter") {
@@ -283,6 +314,7 @@ export function CheckoutDrawer({
           >
             <div className="flex items-start gap-2.5">
               <span
+                aria-hidden="true"
                 className={cn(
                   "mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0",
                   includeOrderBump
@@ -295,7 +327,7 @@ export function CheckoutDrawer({
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-crimson-700 uppercase">
-                    <Gift className="w-3 h-3" />
+                    <Gift className="w-3 h-3" aria-hidden="true" />
                     Protection Add-On
                   </span>
                   <span className="text-xs font-extrabold text-crimson-700">
@@ -310,14 +342,17 @@ export function CheckoutDrawer({
           </div>
 
           {errorMsg && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs font-semibold text-crimson-700">
+            <div
+              role="alert"
+              className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs font-semibold text-crimson-700"
+            >
               {errorMsg}
             </div>
           )}
         </div>
 
         {/* Drawer Footer */}
-        <div className="p-5 bg-white border-t border-pine-900/15 space-y-3">
+        <div className="p-4 sm:p-5 bg-white border-t border-pine-900/15 space-y-3">
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between text-pine-800">
               <span>Subtotal</span>
@@ -349,12 +384,12 @@ export function CheckoutDrawer({
           >
             {submitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                 <span>Preparing Secure Checkout...</span>
               </>
             ) : (
               <>
-                <Lock className="w-4 h-4 text-amberGlow-300" />
+                <Lock className="w-4 h-4 text-amberGlow-300" aria-hidden="true" />
                 <span>
                   Proceed to Secure Checkout — {formatMoney(total, currency)}
                 </span>
@@ -362,10 +397,12 @@ export function CheckoutDrawer({
             )}
           </button>
 
-          <p className="text-[11px] text-center text-pine-700 flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-            256-Bit Encrypted Checkout • 30-Day Money-Back Guarantee
-          </p>
+          <TrustBadges
+            variant="checkout"
+            freeShippingUnlocked={shippingFee === 0}
+            deliveryEta={currencyMeta.deliveryEta}
+            guaranteeDays={PRODUCT_CONFIG.guaranteeDays}
+          />
         </div>
       </div>
     </div>
