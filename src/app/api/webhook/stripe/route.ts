@@ -10,6 +10,7 @@ import {
   forwardToFulfillmentWebhook,
   sendOrderEmails,
 } from "@/lib/email";
+import { submitOrderToCJDropshipping } from "@/lib/cjdropshipping";
 
 function formatShippingAddress(
   shippingDetails: Stripe.Checkout.Session.ShippingDetails | null | undefined,
@@ -179,10 +180,31 @@ export async function POST(req: NextRequest) {
       siteUrl,
     };
 
-    const [emailResult, forwardResult] = await Promise.allSettled([
+    const [emailResult, forwardResult, cjResult] = await Promise.allSettled([
       sendOrderEmails(orderData),
       forwardToFulfillmentWebhook(orderData),
+      submitOrderToCJDropshipping({
+        orderRef,
+        customerName: orderData.customerName,
+        customerPhone: orderData.customerPhone,
+        address: {
+          line1: shippingDetails?.address?.line1,
+          line2: shippingDetails?.address?.line2,
+          city: shippingDetails?.address?.city,
+          state: shippingDetails?.address?.state,
+          postalCode: shippingDetails?.address?.postal_code,
+          country: shippingDetails?.address?.country,
+        },
+        cottageQty: orderData.cottageQty,
+        includeOrderBump: orderData.includeOrderBump,
+        bundleId: orderData.bundleId,
+        isUpsell: orderData.isUpsell,
+        siteUrl,
+      }),
     ]);
+
+    const cjOrderId =
+      cjResult.status === "fulfilled" ? cjResult.value.cjOrderId : undefined;
 
     if (stripe && paymentIntentId) {
       try {
@@ -192,6 +214,7 @@ export async function POST(req: NextRequest) {
             order_ref: orderRef,
             fulfillment_processed: "true",
             fulfillment_status: "processing",
+            ...(cjOrderId ? { cj_order_id: cjOrderId } : {}),
           },
         });
       } catch (updateErr) {
@@ -218,6 +241,10 @@ export async function POST(req: NextRequest) {
           forwardResult.status === "fulfilled"
             ? forwardResult.value
             : { forwarded: false },
+        cjDropshipping:
+          cjResult.status === "fulfilled"
+            ? cjResult.value
+            : { submitted: false, error: "cj_failed" },
       },
     });
   } catch (error) {
