@@ -1,13 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <radialGradient id="hearthAura" cx="50%" cy="62%" r="48%">
+      <stop offset="0%" stop-color="#FBBF24" stop-opacity="0.38" />
+      <stop offset="100%" stop-color="#0F241C" stop-opacity="0" />
+    </radialGradient>
+  </defs>
   <rect width="64" height="64" rx="16" fill="#0F241C" />
-  <circle cx="43" cy="14" r="3" fill="#FFFFFF" fill-opacity="0.7" />
-  <circle cx="46" cy="9" r="2.2" fill="#FFFFFF" fill-opacity="0.5" />
-  <rect x="38" y="17" width="7" height="12" rx="1.5" fill="#991B1B" />
-  <rect x="37" y="16" width="9" height="3" rx="1.5" fill="#FFFFFF" />
-  <rect x="18" y="33" width="28" height="21" rx="3" fill="#FFFDF8" />
-  <polygon points="13,34 32,18 51,34" fill="#B91C1C" />
-  <path d="M12 34 L32 17 L52 34 L48 37 L32 23 L16 37 Z" fill="#FFFFFF" />
-  <rect x="23" y="39" width="8" height="9" rx="1.5" fill="#FBBF24" />
-  <rect x="34" y="39" width="8" height="15" rx="2" fill="#7C2D12" />
-  <circle cx="32" cy="27" r="2.5" fill="#FCD34D" />
+  <rect width="64" height="64" rx="16" fill="url(#hearthAura)" />
+
+  <!-- Chimney mist puffs -->
+  <circle cx="43.5" cy="12.5" r="3.2" fill="#FFFFFF" fill-opacity="0.92" />
+  <circle cx="47.5" cy="7.5" r="2.4" fill="#FFFFFF" fill-opacity="0.72" />
+
+  <!-- Brick chimney with snow cap -->
+  <rect x="38" y="16" width="8" height="14" rx="1.5" fill="#991B1B" />
+  <rect x="36.5" y="15" width="11" height="3.2" rx="1.6" fill="#FFFFFF" />
+
+  <!-- Cottage timber walls & snow base -->
+  <rect x="16" y="32" width="32" height="22" rx="3" fill="#FFFDF8" />
+  <rect x="13" y="52.5" width="38" height="3.5" rx="1.75" fill="#E2E8F0" />
+
+  <!-- Steep crimson roof & thick snow eaves -->
+  <polygon points="10,33.5 32,15 54,33.5" fill="#B91C1C" />
+  <path
+    d="M9 33.5 L32 14 L55 33.5 C55 35.5 52.5 36.8 50.5 35 L32 19.5 L13.5 35 C11.5 36.8 9 35.5 9 33.5 Z"
+    fill="#FFFFFF"
+  />
+
+  <!-- Glowing circular attic window -->
+  <circle cx="32" cy="26.5" r="3" fill="#FCD34D" />
+
+  <!-- Glowing amber cottage windows & arched door -->
+  <rect x="20" y="38.5" width="8.5" height="9.5" rx="1.8" fill="#FBBF24" stroke="#78350F" stroke-width="1.2" />
+  <line x1="24.25" y1="38.5" x2="24.25" y2="48" stroke="#78350F" stroke-width="1.1" />
+  <line x1="20" y1="43.25" x2="28.5" y2="43.25" stroke="#78350F" stroke-width="1.1" />
+
+  <path d="M34 54 L34 42.5 C34 39.2 42 39.2 42 42.5 L42 54 Z" fill="#7C2D12" />
+  <circle cx="38" cy="44" r="1.4" fill="#15803D" />
 </svg>

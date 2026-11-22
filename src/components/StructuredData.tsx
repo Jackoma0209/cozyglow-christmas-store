@@ -32,7 +32,7 @@ export function StructuredData({ currency, siteUrl }: StructuredDataProps) {
         "@id": `${cleanUrl}/#organization`,
         name: "CozyGlow™ Home Aromatics",
         url: cleanUrl,
-        logo: `${cleanUrl}/icon.svg`,
+        logo: `${cleanUrl}/icon-512.png`,
         email: PRODUCT_CONFIG.supportEmail,
         contactPoint: {
           "@type": "ContactPoint",
