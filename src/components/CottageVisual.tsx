@@ -37,7 +37,7 @@ export function CottageVisual({
   return (
     <div
       className={cn(
-        "relative w-full h-full overflow-hidden rounded-2xl select-none flex items-center justify-center",
+        "relative isolate z-0 w-full h-full overflow-hidden rounded-2xl select-none flex items-center justify-center",
         isNight
           ? "bg-gradient-to-b from-[#071310] via-[#0F261E] to-[#193B2F]"
           : isCutaway
