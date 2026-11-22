@@ -7,6 +7,11 @@ import {
   STRIPE_STORE_TAG,
   getOrderReferenceFromSessionId,
 } from "@/config/product";
+import {
+  STRIPE_CHECKOUT_API_VERSION,
+  STRIPE_STATEMENT_DESCRIPTOR_SUFFIX,
+  buildCheckoutBrandingSettings,
+} from "@/lib/stripe-branding";
 
 interface UpsellPayload {
   parentSessionId?: string;
@@ -34,7 +39,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const stripe = new Stripe(stripeSecretKey);
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: STRIPE_CHECKOUT_API_VERSION,
+    });
     const parent = await stripe.checkout.sessions.retrieve(parentSessionId);
 
     if (parent.metadata?.store !== STRIPE_STORE_TAG) {
@@ -59,6 +66,13 @@ export async function POST(req: NextRequest) {
         : POST_PURCHASE_UPSELL.priceUsd) * 100
     );
 
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      req.headers.get("origin") ||
+      "http://localhost:3000";
+    const cleanOrigin = origin.replace(/\/+$/, "");
+    const isPublicHttps = cleanOrigin.startsWith("https://");
+
     const envPriceId =
       currency === "gbp"
         ? process.env.STRIPE_PRICE_UPSELL_GBP
@@ -73,17 +87,19 @@ export async function POST(req: NextRequest) {
               product_data: {
                 name: POST_PURCHASE_UPSELL.title,
                 description: POST_PURCHASE_UPSELL.bullets.join(" • "),
+                ...(isPublicHttps
+                  ? {
+                      images: [
+                        `${cleanOrigin}/images/products/04-mantel-village-setup.jpg`,
+                      ],
+                    }
+                  : {}),
               },
               unit_amount: unitAmount,
             },
             quantity: 1,
           },
         ];
-
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      req.headers.get("origin") ||
-      "http://localhost:3000";
 
     const parentOrderRef = getOrderReferenceFromSessionId(parent.id);
     const bundleId = parent.metadata?.bundleId || "double";
@@ -105,7 +121,9 @@ export async function POST(req: NextRequest) {
       metadata: upsellMetadata,
       payment_intent_data: {
         metadata: upsellMetadata,
+        statement_descriptor_suffix: STRIPE_STATEMENT_DESCRIPTOR_SUFFIX,
       },
+      branding_settings: buildCheckoutBrandingSettings(origin),
       shipping_options: [
         {
           shipping_rate_data: {
@@ -124,7 +142,7 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}/success?bundle=${bundleId}&currency=${currency}&bump=${bumpFlag}&session_id=${encodeURIComponent(
         parent.id
       )}&upsell_canceled=true`,
-    });
+    } as Stripe.Checkout.SessionCreateParams);
 
     return NextResponse.json({
       demoMode: false,

@@ -11,6 +11,11 @@ import {
   STRIPE_SEASON_TAG,
   STRIPE_STORE_TAG,
 } from "@/config/product";
+import {
+  STRIPE_CHECKOUT_API_VERSION,
+  STRIPE_STATEMENT_DESCRIPTOR_SUFFIX,
+  buildCheckoutBrandingSettings,
+} from "@/lib/stripe-branding";
 
 interface CheckoutPayload {
   bundleId?: BundleTier["id"];
@@ -53,6 +58,20 @@ export async function POST(req: NextRequest) {
       (currency === "gbp" ? ORDER_BUMP.priceGbp : ORDER_BUMP.priceUsd) * 100
     );
 
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      req.headers.get("origin") ||
+      "http://localhost:3000";
+    const cleanOrigin = origin.replace(/\/+$/, "");
+    const isPublicHttps = cleanOrigin.startsWith("https://");
+
+    const bundleImagePath =
+      bundle.id === "single"
+        ? "/images/products/01-chimney-mist-hero.jpg"
+        : bundle.id === "double"
+        ? "/images/products/02-warm-window-glow.jpg"
+        : "/images/products/04-mantel-village-setup.jpg";
+
     const priceDataLineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
         price_data: {
@@ -60,6 +79,7 @@ export async function POST(req: NextRequest) {
           product_data: {
             name: `${PRODUCT_CONFIG.shortProductName} — ${bundle.name}`,
             description: bundle.includes.join(" • "),
+            ...(isPublicHttps ? { images: [`${cleanOrigin}${bundleImagePath}`] } : {}),
           },
           unit_amount: bundleUnitAmount,
         },
@@ -74,6 +94,13 @@ export async function POST(req: NextRequest) {
           product_data: {
             name: ORDER_BUMP.title,
             description: ORDER_BUMP.subtitle,
+            ...(isPublicHttps
+              ? {
+                  images: [
+                    `${cleanOrigin}/images/products/05-gift-box-unboxing.jpg`,
+                  ],
+                }
+              : {}),
           },
           unit_amount: bumpUnitAmount,
         },
@@ -112,12 +139,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      req.headers.get("origin") ||
-      "http://localhost:3000";
-
-    const stripe = new Stripe(stripeSecretKey);
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: STRIPE_CHECKOUT_API_VERSION,
+    });
 
     const checkoutMetadata: Record<string, string> = {
       store: STRIPE_STORE_TAG,
@@ -193,7 +217,9 @@ export async function POST(req: NextRequest) {
         metadata: checkoutMetadata,
         payment_intent_data: {
           metadata: checkoutMetadata,
+          statement_descriptor_suffix: STRIPE_STATEMENT_DESCRIPTOR_SUFFIX,
         },
+        branding_settings: buildCheckoutBrandingSettings(origin),
         shipping_address_collection: {
           allowed_countries: ["GB", "US", "CA", "AU", "IE"],
         },
@@ -205,7 +231,7 @@ export async function POST(req: NextRequest) {
           includeOrderBump ? "1" : "0"
         }&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/?canceled=true`,
-      });
+      } as Stripe.Checkout.SessionCreateParams);
 
     const hasExplicitPriceEnvOverride = Boolean(
       process.env.STRIPE_PRICE_SINGLE_GBP ||
