@@ -7,6 +7,7 @@ import {
   parseCurrencyCode,
 } from "@/lib/currency";
 import { StorefrontClient } from "@/components/StorefrontClient";
+import { StructuredData } from "@/components/StructuredData";
 
 export default async function StorefrontPage() {
   const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
@@ -29,10 +30,17 @@ export default async function StorefrontPage() {
   const initialCurrency: CurrencyCode =
     cookieCurrency ?? geoCurrency ?? langCurrency ?? "gbp";
 
+  const siteUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://cozyglowhome.com"
+  ).replace(/\/+$/, "");
+
   return (
-    <StorefrontClient
-      initialCurrency={initialCurrency}
-      hasServerGeo={hasServerGeo}
-    />
+    <>
+      <StructuredData currency={initialCurrency} siteUrl={siteUrl} />
+      <StorefrontClient
+        initialCurrency={initialCurrency}
+        hasServerGeo={hasServerGeo}
+      />
+    </>
   );
 }

@@ -5,8 +5,11 @@ import { PolicyPageView } from "@/components/PolicyPageView";
 const doc = POLICY_DOCUMENTS.returns;
 
 export const metadata: Metadata = {
-  title: `${doc.title} | CozyGlow™ Home Aromatics`,
+  title: doc.title,
   description: doc.metaDescription,
+  alternates: {
+    canonical: doc.slug,
+  },
 };
 
 export default function ReturnsPolicyPage() {
